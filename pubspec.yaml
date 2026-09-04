@@ -1,0 +1,62 @@
+name: coachmint
+description: "CoachMint — مدربك الرياضي الذكي. اختر أي رياضة وحدد مستواك، والذكاء الاصطناعي يبني لك برنامجاً تدريبياً متدرجاً خاصاً بك."
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # UI
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.1
+  fl_chart: ^0.69.0
+
+  # State management
+  provider: ^6.1.2
+
+  # Networking
+  http: ^1.2.2
+
+  # Storage
+  shared_preferences: ^2.3.2
+  flutter_secure_storage: ^9.2.2
+
+  # Health integrations (Apple HealthKit + Google Fit / Health Connect)
+  health: ^11.1.1
+  permission_handler: ^11.3.1
+
+  # Utils
+  intl: ^0.20.2
+  crypto: ^3.0.5
+  uuid: ^4.5.1
+  url_launcher: ^6.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.1
+
+dependency_overrides:
+  intl: ^0.20.2
+
+# أيقونة التطبيق — ولّدها بـ: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/icon.png"
+  adaptive_icon_background: "#132420"       # Spruce
+  adaptive_icon_foreground: "assets/images/icon_foreground.png"
+  remove_alpha_ios: true
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/

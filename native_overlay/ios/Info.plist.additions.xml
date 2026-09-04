@@ -1,0 +1,38 @@
+<!--
+  المفاتيح التي يجب إضافتها إلى ios/Runner/Info.plist داخل <dict> الرئيسي.
+  سكربت setup ينسخها تلقائياً؛ هذا الملف مرجع لو احتجت إضافتها يدوياً.
+-->
+
+<!-- اسم التطبيق كما يظهر تحت الأيقونة -->
+<key>CFBundleDisplayName</key>
+<string>CoachMint</string>
+
+<!-- دعم اللغة العربية كلغة أساسية -->
+<key>CFBundleDevelopmentRegion</key>
+<string>ar</string>
+<key>CFBundleLocalizations</key>
+<array>
+    <string>ar</string>
+    <string>en</string>
+</array>
+
+<!-- HealthKit: مطلوب نصّياً وإلا رُفض التطبيق في App Review -->
+<key>NSHealthShareUsageDescription</key>
+<string>نقرأ خطواتك وسعراتك ونشاطك الرياضي لنضبط برنامجك التدريبي على مستوى نشاطك الفعلي.</string>
+<key>NSHealthUpdateUsageDescription</key>
+<string>نسجّل جلساتك التدريبية المكتملة في تطبيق الصحة لتبقى كل بياناتك في مكان واحد.</string>
+
+<!-- المخططات التي يفتحها التطبيق عبر url_launcher -->
+<key>LSApplicationQueriesSchemes</key>
+<array>
+    <string>https</string>
+    <string>http</string>
+    <string>mailto</string>
+</array>
+
+<!-- منع الوضع الأفقي -->
+<key>UISupportedInterfaceOrientations</key>
+<array>
+    <string>UIInterfaceOrientationPortrait</string>
+    <string>UIInterfaceOrientationPortraitUpsideDown</string>
+</array>
