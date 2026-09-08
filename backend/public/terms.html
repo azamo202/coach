@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>الشروط والأحكام | CoachMint</title>
   <meta name="description" content="الشروط والأحكام الخاصة باستخدام تطبيق CoachMint وخدمات التدريب الرياضي الذكي.">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
@@ -68,30 +71,26 @@
     .logo {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.65rem;
       text-decoration: none;
-      color: var(--text-primary);
       font-weight: 800;
       font-size: 1.35rem;
+      direction: ltr;
     }
 
-    .logo-mark {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, var(--mint-light), var(--mint-dark));
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--spruce);
-      font-weight: bold;
+    .logo-img {
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+      display: block;
     }
 
-    .logo-leaf {
-      color: var(--coral);
-      font-size: 0.9rem;
-      position: relative;
-      top: -3px;
+    .text-coach {
+      color: var(--text-primary);
+    }
+
+    .text-mint {
+      color: var(--mint);
     }
 
     .nav-links {
@@ -309,8 +308,8 @@
   <header>
     <div class="nav-container">
       <a href="/" class="logo brand-font">
-        <div class="logo-mark">✓</div>
-        CoachMint<span class="logo-leaf">🍃</span>
+        <img src="/mark.png" alt="CoachMint Logo" class="logo-img" width="34" height="34">
+        <span><span class="text-coach">Coach</span><span class="text-mint">Mint</span></span>
       </a>
       <nav class="nav-links">
         <a href="/privacy">سياسة الخصوصية</a>
