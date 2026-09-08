@@ -4,15 +4,15 @@
 /// لحماية مفاتيح الذكاء الاصطناعي وتطبيق قواعد التحقق وتتبع الاستهلاك.
 ///
 /// يمكن تمرير عنوان السيرفر وقت البناء أو التشغيل:
-/// flutter run --dart-define=API_BASE_URL=https://api.coachmint.app
+/// flutter run --dart-define=API_BASE_URL=https://api.coachmin.tech
 class AppConfig {
   const AppConfig._();
 
   static const String appName = 'CoachMint';
   static const String appTagline = 'مدربك الرياضي بالذكاء الاصطناعي';
-  static const String supportEmail = 'support@coachmint.app';
-  static const String privacyPolicyUrl = 'https://coachmint.app/privacy';
-  static const String termsUrl = 'https://coachmint.app/terms';
+  static const String supportEmail = 'support@coachmin.tech';
+  static const String privacyPolicyUrl = 'https://coachmin.tech/privacy';
+  static const String termsUrl = 'https://coachmin.tech/terms';
 
   /// عنوان الباك إند.
   ///
@@ -25,7 +25,7 @@ class AppConfig {
   /// `flutter run --dart-define=API_BASE_URL=http://localhost:8080`
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://api.coachmint.app',
+    defaultValue: 'https://api.coachmin.tech',
   );
 
   /// هل العنوان صالح لنسخة إنتاج؟

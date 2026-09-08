@@ -102,7 +102,7 @@ flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080
 
 ### وضع الإنتاج (موصى به)
 ```bash
-flutter run --dart-define=API_BASE_URL=https://api.coachmint.app
+flutter run --dart-define=API_BASE_URL=https://api.coachmin.tech
 ```
 - الحسابات على السيرفر (bcrypt + JWT)
 - البرامج تُحفظ في قاعدة البيانات وتُزامَن على الأجهزة

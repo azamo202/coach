@@ -122,5 +122,5 @@ echo "التشغيل بالوضع المحلي (بدون سيرفر، للتجر
 echo "  flutter run --dart-define=ANTHROPIC_API_KEY=sk-ant-..."
 echo ""
 echo "التشغيل مع الباك إند (الوضع الصحيح للإنتاج):"
-echo "  flutter run --dart-define=API_BASE_URL=https://api.coachmint.app"
+echo "  flutter run --dart-define=API_BASE_URL=https://api.coachmin.tech"
 echo ""

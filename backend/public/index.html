@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CoachMint — مدربك الرياضي بالذكاء الاصطناعي</title>
+  <meta name="description" content="تطبيق رياضي ذكي يبني لك برامج تدريبية متدرجة أسبوعياً لأي رياضة مع تتبع ذكي للياقتك البدنية.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --spruce: #132420;
+      --spruce-deep: #1B342D;
+      --surface-elevated: #204039;
+      --surface-high: #2A4E45;
+      --border: #264A41;
+      --mint-light: #8BFFCB;
+      --mint: #4FE3A6;
+      --mint-dark: #16A97A;
+      --coral: #FF7A50;
+      --text-primary: #F5F7F4;
+      --text-secondary: #C3D2CA;
+      --text-tertiary: #8FA69B;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--spruce);
+      color: var(--text-primary);
+      font-family: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    .brand-font {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    header {
+      background: rgba(27, 52, 45, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .nav-container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 1.1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      color: var(--text-primary);
+      font-weight: 800;
+      font-size: 1.4rem;
+    }
+
+    .logo-mark {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--mint-light), var(--mint-dark));
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--spruce);
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    .logo-leaf {
+      color: var(--coral);
+      font-size: 1rem;
+      position: relative;
+      top: -3px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--mint);
+    }
+
+    /* Hero Section */
+    .hero {
+      position: relative;
+      padding: 5rem 1.5rem 4rem;
+      text-align: center;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .hero-glow {
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(79, 227, 166, 0.12) 0%, rgba(22, 169, 122, 0.05) 45%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(79, 227, 166, 0.1);
+      border: 1px solid rgba(79, 227, 166, 0.3);
+      padding: 0.35rem 1.1rem;
+      border-radius: 9999px;
+      color: var(--mint);
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.3rem, 5vw, 3.6rem);
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 1.25rem;
+      background: linear-gradient(180deg, #FFFFFF 0%, #C3D2CA 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: clamp(1.05rem, 2.5vw, 1.25rem);
+      color: var(--text-secondary);
+      max-width: 680px;
+      margin: 0 auto 2.5rem;
+    }
+
+    .cta-group {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.85rem 1.8rem;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--mint-light), var(--mint));
+      color: var(--spruce);
+      box-shadow: 0 4px 20px rgba(79, 227, 166, 0.25);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 25px rgba(79, 227, 166, 0.35);
+    }
+
+    .btn-secondary {
+      background: var(--surface-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--surface-high);
+      border-color: var(--mint);
+    }
+
+    /* Features Grid */
+    .features {
+      max-width: 1080px;
+      margin: 2rem auto 5rem;
+      padding: 0 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      background: var(--spruce-deep);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--mint);
+      transform: translateY(-3px);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--surface-elevated);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 1.25rem;
+      color: var(--mint);
+      border: 1px solid var(--border);
+    }
+
+    .feature-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.6rem;
+      color: var(--text-primary);
+    }
+
+    .feature-card p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    footer {
+      background: var(--spruce-deep);
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 1.5rem;
+      margin-top: auto;
+      text-align: center;
+      color: var(--text-tertiary);
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--mint);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="nav-container">
+      <a href="/" class="logo brand-font">
+        <div class="logo-mark">✓</div>
+        CoachMint<span class="logo-leaf">🍃</span>
+      </a>
+      <nav class="nav-links">
+        <a href="/privacy">سياسة الخصوصية</a>
+        <a href="/terms">الشروط والأحكام</a>
+        <a href="mailto:support@coachmin.tech">الدعم</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-glow"></div>
+      <div class="hero-content">
+        <div class="badge">✨ مدعوم بأحدث تقنيات الذكاء الاصطناعي</div>
+        <h1>تمرّن بذكاء. تقدّم بثقة.</h1>
+        <p>
+          تطبيق <strong>CoachMint</strong> يبني لك برنامجاً تدريبياً متدرجاً ومفصلاً لأي رياضة تختارها، مع تتبع دقيق لبيانات الصحة والتكرارات وإرشادات أداء كل تمرين.
+        </p>
+        <div class="cta-group">
+          <a href="/privacy" class="btn btn-primary">سياسة الخصوصية</a>
+          <a href="/terms" class="btn btn-secondary">الشروط والأحكام</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>برامج رياضية متدرجة</h3>
+        <p>اختر أي رياضة وحدد مستواك وسيقوم المدرب الذكي بإنشاء برنامج مخصص أسبوعاً بأسبوع مع شرح طريقة الأداء.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">❤️</div>
+        <h3>تكامل بيانات الصحة</h3>
+        <p>ربط مباشر مع Apple HealthKit و Health Connect لمتابعة خطواتك وسعراتك وملاءمة التمارين لنشاطك اليومي.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <h3>أمان وخصوصية كاملة</h3>
+        <p>بياناتك محمية ومشفرة بالكامل مع إمكانية حذف الحساب وكافة السجلات في أي وقت بضغطة زر واحدة.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-links">
+      <a href="/privacy">سياسة الخصوصية</a>
+      <span>•</span>
+      <a href="/terms">الشروط والأحكام</a>
+      <span>•</span>
+      <a href="mailto:support@coachmin.tech">support@coachmin.tech</a>
+    </div>
+    <p>© 2026 CoachMint. جميع الحقوق محفوظة.</p>
+  </footer>
+
+</body>
+</html>

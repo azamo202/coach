@@ -24,7 +24,7 @@ Node.js 20 + Express + SQLite. مسؤول عن ثلاثة أشياء:
 
 ## الواجهات (API)
 
-القاعدة: `https://api.coachmint.app`
+القاعدة: `https://api.coachmin.tech`
 المصادقة: `Authorization: Bearer <token>`
 
 ### الحسابات
@@ -42,7 +42,7 @@ Node.js 20 + Express + SQLite. مسؤول عن ثلاثة أشياء:
 **مثال — إنشاء حساب:**
 
 ```bash
-curl -X POST https://api.coachmint.app/auth/register \
+curl -X POST https://api.coachmin.tech/auth/register \
   -H 'content-type: application/json' \
   -d '{"name":"أحمد","email":"a@example.com","password":"Passw0rd1"}'
 ```
@@ -211,5 +211,5 @@ pm2 startup && pm2 save
 `TODO`، وأرسل الرابط:
 
 ```
-https://coachmint.app/reset?token=<token>
+https://coachmin.tech/reset?token=<token>
 ```

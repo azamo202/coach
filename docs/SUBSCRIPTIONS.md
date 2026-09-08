@@ -151,7 +151,7 @@ NODE_ENV=production
 للتأكد من اكتمال الإعداد:
 
 ```bash
-curl -H "Authorization: Bearer <token>" https://api.coachmint.app/subscriptions/diagnostics
+curl -H "Authorization: Bearer <token>" https://api.coachmin.tech/subscriptions/diagnostics
 ```
 
 يجب أن يرد `{"ready": true, ...}`. ويطبع الخادم عند الإقلاع `الاشتراكات جاهزة ✓`.
@@ -166,7 +166,7 @@ Server Notifications**
 | الحقل | القيمة |
 |-------|--------|
 | Version | **Version 2** (لا V1) |
-| Production URL | `https://api.coachmint.app/subscriptions/apple/notifications` |
+| Production URL | `https://api.coachmin.tech/subscriptions/apple/notifications` |
 | Sandbox URL | نفس المسار على خادم الاختبار |
 
 هذا ما يجعل الاشتراكات صحيحة **بين** فتحات التطبيق: التجديد، الإلغاء، فشل

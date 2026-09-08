@@ -1,5 +1,8 @@
 import 'dotenv/config';
 
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import cors from 'cors';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
@@ -12,12 +15,29 @@ import { authRouter } from './routes/auth.js';
 import { programsRouter } from './routes/programs.js';
 import { subscriptionsRouter } from './routes/subscriptions.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const publicDir = path.join(__dirname, '..', 'public');
+
 const app = express();
 const PORT = Number(process.env.PORT || 8080);
 
 app.set('trust proxy', 1);
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+      },
+    },
+  }),
+);
 app.use(express.json({ limit: '2mb' }));
+app.use(express.static(publicDir));
 
 const origins = (process.env.CORS_ORIGINS || '')
   .split(',')
@@ -42,6 +62,18 @@ app.use(
 
 app.get('/health', (_req, res) => {
   res.json({ ok: true, service: 'coachmint-api', time: new Date().toISOString() });
+});
+
+app.get('/', (_req, res) => {
+  res.sendFile(path.join(publicDir, 'index.html'));
+});
+
+app.get('/privacy', (_req, res) => {
+  res.sendFile(path.join(publicDir, 'privacy.html'));
+});
+
+app.get('/terms', (_req, res) => {
+  res.sendFile(path.join(publicDir, 'terms.html'));
 });
 
 app.use('/auth', authRouter);

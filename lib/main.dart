@@ -29,8 +29,7 @@ Future<void> main() async {
     () {
       if (kReleaseMode && !AppConfig.isProductionApi) {
         throw StateError(
-          'API_BASE_URL غير صالح للإنتاج: ${AppConfig.apiBaseUrl}
-'
+          'API_BASE_URL غير صالح للإنتاج: ${AppConfig.apiBaseUrl}\n'
           'ابنِ بـ: flutter build ipa --dart-define=API_BASE_URL=https://...',
         );
       }

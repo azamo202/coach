@@ -51,7 +51,7 @@ open ios/Runner.xcworkspace
 ### 3. رفع البناء
 
 ```bash
-flutter build ipa --release --dart-define=API_BASE_URL=https://api.coachmint.app
+flutter build ipa --release --dart-define=API_BASE_URL=https://api.coachmin.tech
 ```
 
 ثم من Xcode: **Product → Archive → Distribute App → App Store Connect**،
@@ -180,7 +180,7 @@ buildTypes {
 
 ```bash
 flutter build appbundle --release \
-  --dart-define=API_BASE_URL=https://api.coachmint.app
+  --dart-define=API_BASE_URL=https://api.coachmin.tech
 ```
 
 الناتج: `build/app/outputs/bundle/release/app-release.aab`

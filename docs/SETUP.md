@@ -96,7 +96,7 @@ flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080
 | محاكي أندرويد | `http://10.0.2.2:8080` |
 | محاكي iOS | `http://localhost:8080` |
 | جهاز حقيقي على نفس الشبكة | `http://192.168.x.x:8080` (IP جهازك) |
-| إنتاج | `https://api.coachmint.app` |
+| إنتاج | `https://api.coachmin.tech` | السيرفر الفعلي مع التشفير وقاعدة البيانات |
 
 > على جهاز أندرويد حقيقي مع سيرفر HTTP غير مشفّر ستحتاج `usesCleartextTraffic`
 > في الـ manifest — لكن **لا تفعل ذلك في نسخة الإنتاج**، استخدم HTTPS.

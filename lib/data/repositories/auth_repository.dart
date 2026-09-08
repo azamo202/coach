@@ -304,7 +304,7 @@ class RemoteAuthRepository implements AuthRepository {
 AppUser demoUser() => AppUser(
       id: 'demo',
       name: 'متدرب',
-      email: 'demo@coachmint.app',
+      email: 'demo@coachmin.tech',
       level: FitnessLevel.beginner,
       createdAt: DateTime.now(),
     );
