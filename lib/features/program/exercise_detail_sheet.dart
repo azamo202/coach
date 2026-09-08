@@ -11,7 +11,10 @@ import '../../core/widgets/app_widgets.dart';
 import '../../data/models/coach_advice.dart';
 import '../../data/models/training_program.dart';
 import '../../data/services/ai_program_service.dart';
+import '../../routing/app_router.dart';
 import '../../state/auth_controller.dart';
+import '../../state/subscription_controller.dart';
+import '../paywall/paywall_screen.dart';
 
 /// المرجع السريع لطريقة أداء التمرين واستشارة المدرب الذكي.
 Future<void> showExerciseDetail(
@@ -313,6 +316,21 @@ class _AiCoachSectionState extends State<_AiCoachSection> {
     if (question.isEmpty) return;
 
     FocusScope.of(context).unfocus();
+
+    // المدرّب الذكي ميزة اشتراك. الخادم يرفضها بدونه، لكن عرض صفحة
+    // الاشتراك أوضح للمستخدم من رسالة رفض داخل ورقة التمرين.
+    final subscription = context.read<SubscriptionController>();
+    if (!subscription.canAskCoach) {
+      await context.pushPage<void>(
+        const PaywallScreen(
+          reason: 'استشارة المدرّب الذكي متاحة للمشتركين.',
+        ),
+      );
+      if (!mounted) return;
+      await subscription.refresh();
+      if (!mounted || !subscription.canAskCoach) return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;

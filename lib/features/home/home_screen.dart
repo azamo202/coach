@@ -12,9 +12,11 @@ import '../../routing/app_router.dart';
 import '../../state/auth_controller.dart';
 import '../../state/health_controller.dart';
 import '../../state/library_controller.dart';
+import '../../state/subscription_controller.dart';
 import '../program/program_screen.dart';
 import '../shell/main_shell.dart';
-import '../sports/new_program_screen.dart';
+import '../paywall/paywall_screen.dart';
+import '../paywall/subscription_gate.dart';
 import 'widgets/health_card.dart';
 import 'widgets/program_list_tile.dart';
 
@@ -346,49 +348,59 @@ class _FirstRunView extends StatelessWidget {
   ];
 
   void _create(BuildContext context, [String? sport]) {
-    context.pushPage(NewProgramScreen(presetSport: sport));
+    openNewProgram(context, presetSport: sport);
   }
 
   @override
   Widget build(BuildContext context) {
+    final subscribed = context.watch<SubscriptionController>().isSubscribed;
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         const SizedBox(height: Space.lg),
-        const RevealIn(child: _FirstRunHeadline()),
+        RevealIn(child: _FirstRunHeadline(subscribed: subscribed)),
         const SizedBox(height: Space.xl),
         RevealIn(
           step: 1,
           child: AppButton.primary(
-            label: 'أنشئ برنامجي',
-            icon: Icons.auto_awesome_rounded,
-            onPressed: () => _create(context),
+            label: subscribed ? 'أنشئ برنامجي' : 'اختر باقتك',
+            icon: subscribed
+                ? Icons.auto_awesome_rounded
+                : Icons.workspace_premium_rounded,
+            onPressed: subscribed
+                ? () => _create(context)
+                : () => context.pushPage<void>(const PaywallScreen()),
           ),
         ),
         const SizedBox(height: Space.xl),
-        RevealIn(
-          step: 2,
-          child: Column(
-            children: <Widget>[
-              Text('أو ابدأ من رياضة شائعة', style: AppType.overline),
-              const SizedBox(height: Space.md),
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: Space.sm,
-                runSpacing: Space.sm,
-                children: <Widget>[
-                  for (final sport in _quickSports)
-                    AppChip(
-                      label: sport,
-                      selected: false,
-                      onTap: () => _create(context, sport),
-                    ),
-                ],
-              ),
-            ],
+        // الرياضات السريعة اختصار لمن يستطيع الإنشاء. عرضها على غير المشترك
+        // يعني أربعة أزرار كلها تنتهي إلى نفس صفحة الاشتراك — وعدٌ بطريق
+        // قصير لا وجود له.
+        if (subscribed)
+          RevealIn(
+            step: 2,
+            child: Column(
+              children: <Widget>[
+                Text('أو ابدأ من رياضة شائعة', style: AppType.overline),
+                const SizedBox(height: Space.md),
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: Space.sm,
+                  runSpacing: Space.sm,
+                  children: <Widget>[
+                    for (final sport in _quickSports)
+                      AppChip(
+                        label: sport,
+                        selected: false,
+                        onTap: () => _create(context, sport),
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
         const SizedBox(height: Space.x3),
         RevealIn(
           step: 3,
@@ -415,7 +427,9 @@ class _FirstRunView extends StatelessWidget {
 
 /// عنوان الحالة الفارغة: هالة نعناعية ثم العنوان والشرح.
 class _FirstRunHeadline extends StatelessWidget {
-  const _FirstRunHeadline();
+  const _FirstRunHeadline({required this.subscribed});
+
+  final bool subscribed;
 
   @override
   Widget build(BuildContext context) {
@@ -475,8 +489,11 @@ class _FirstRunHeadline extends StatelessWidget {
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 320),
           child: Text(
-            'اختر أي رياضة تريد التطوّر فيها، ويبني لك المدرّب الذكي برنامجاً '
-            'متدرّجاً على مستواك.',
+            subscribed
+                ? 'اختر أي رياضة تريد التطوّر فيها، ويبني لك المدرّب الذكي '
+                    'برنامجاً متدرّجاً على مستواك.'
+                : 'اختر باقتك، ويبني لك المدرّب الذكي برنامجاً متدرّجاً على '
+                    'رياضتك ومستواك وهدفك.',
             textAlign: TextAlign.center,
             style: AppType.body.copyWith(color: AppColors.textSecondary),
           ),

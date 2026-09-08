@@ -14,6 +14,7 @@ class AppUser {
     this.gender,
     this.hasCompletedOnboarding = false,
     this.healthSyncEnabled = false,
+    this.appAccountToken,
     this.createdAt,
   });
 
@@ -28,6 +29,13 @@ class AppUser {
   final String? gender;
   final bool hasCompletedOnboarding;
   final bool healthSyncEnabled;
+
+  /// رمز يربط عمليات الشراء في StoreKit بهذا الحساب.
+  ///
+  /// يولّده الخادم كـUUID لأن Apple لا تقبل غيره في `appAccountToken`،
+  /// ثم تعيده لنا داخل العملية الموقّعة فيثبت أن الشراء يخصّ هذا الحساب.
+  final String? appAccountToken;
+
   final DateTime? createdAt;
 
   String get initials {
@@ -65,6 +73,7 @@ class AppUser {
     String? gender,
     bool? hasCompletedOnboarding,
     bool? healthSyncEnabled,
+    String? appAccountToken,
   }) {
     return AppUser(
       id: id,
@@ -79,6 +88,7 @@ class AppUser {
       hasCompletedOnboarding:
           hasCompletedOnboarding ?? this.hasCompletedOnboarding,
       healthSyncEnabled: healthSyncEnabled ?? this.healthSyncEnabled,
+      appAccountToken: appAccountToken ?? this.appAccountToken,
       createdAt: createdAt,
     );
   }
@@ -95,6 +105,7 @@ class AppUser {
         'gender': gender,
         'hasCompletedOnboarding': hasCompletedOnboarding,
         'healthSyncEnabled': healthSyncEnabled,
+        'appAccountToken': appAccountToken,
         'createdAt': createdAt?.toIso8601String(),
       };
 
@@ -111,6 +122,9 @@ class AppUser {
       gender: json['gender'] as String?,
       hasCompletedOnboarding: json['hasCompletedOnboarding'] == true,
       healthSyncEnabled: json['healthSyncEnabled'] == true,
+      appAccountToken: (json['appAccountToken'] as String?)?.trim().isEmpty ?? true
+          ? null
+          : (json['appAccountToken'] as String).trim(),
       createdAt: DateTime.tryParse((json['createdAt'] ?? '').toString()),
     );
   }

@@ -7,7 +7,9 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "dev": "node --watch src/server.js",
+    "fetch:apple-root": "node scripts/fetch-apple-root.mjs",
+    "test": "node --test \"test/**/*.test.js\""
   },
   "engines": {
     "node": ">=20"

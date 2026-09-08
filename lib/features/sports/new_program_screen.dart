@@ -13,6 +13,7 @@ import '../../routing/app_router.dart';
 import '../../state/auth_controller.dart';
 import '../../state/health_controller.dart';
 import '../../state/library_controller.dart';
+import '../paywall/subscription_gate.dart';
 import 'generating_screen.dart';
 
 /// اختيار الرياضة والمستوى والهدف قبل التوليد.
@@ -103,6 +104,11 @@ class _NewProgramScreenState extends State<NewProgramScreen> {
     final user = context.read<AuthController>().user;
     final navigator = Navigator.of(context);
     final sport = _sport;
+
+    // إعادة فحص عند الإرسال: قد ينتهي الاشتراك بين فتح الشاشة والضغط،
+    // والانتظار دقيقة ثم تلقّي رفض تجربة سيئة.
+    if (!await ensureProgramSlot(context)) return;
+    if (!mounted) return;
 
     if (library.hasSport(sport)) {
       final proceed = await showConfirmDialog(

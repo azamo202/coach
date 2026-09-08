@@ -11,7 +11,7 @@ import '../../data/models/program_progress.dart';
 import '../../routing/app_router.dart';
 import '../../state/library_controller.dart';
 import '../program/program_screen.dart';
-import '../sports/new_program_screen.dart';
+import '../paywall/subscription_gate.dart';
 
 /// نظرة شاملة على تقدّم المستخدم عبر كل رياضاته.
 class ProgressScreen extends StatelessWidget {
@@ -47,7 +47,7 @@ class ProgressScreen extends StatelessWidget {
             title: 'ما فيه تقدّم بعد',
             message: 'أنشئ برنامجاً وابدأ بتسجيل جلساتك، وتظهر إحصاءاتك هنا.',
             actionLabel: 'أنشئ برنامجاً',
-            onAction: () => context.pushPage(const NewProgramScreen()),
+            onAction: () => openNewProgram(context),
           ),
         ),
       );

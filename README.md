@@ -152,4 +152,5 @@ flutter test
 - [`docs/DESIGN-SYSTEM.md`](docs/DESIGN-SYSTEM.md) — المقاييس والخطوط والمكوّنات
 - [`docs/SETUP.md`](docs/SETUP.md) — التجهيز التفصيلي وحل المشاكل
 - [`docs/BACKEND.md`](docs/BACKEND.md) — واجهات الـ API والنشر
+- [`docs/SUBSCRIPTIONS.md`](docs/SUBSCRIPTIONS.md) — الاشتراكات والدفع عبر Apple
 - [`docs/PUBLISHING.md`](docs/PUBLISHING.md) — النشر على App Store و Google Play

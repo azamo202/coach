@@ -2,6 +2,12 @@ import { Router } from 'express';
 
 import { requireAuth } from '../lib/auth.js';
 import { db } from '../lib/db.js';
+import {
+  recordGeneration,
+  reconcileGenerations,
+  releaseGeneration,
+  releaseGenerationsNotIn,
+} from '../lib/subscriptions.js';
 
 export const programsRouter = Router();
 
@@ -17,6 +23,9 @@ function rowToEntry(row) {
 
 /// كل برامج المستخدم مع تقدّمه فيها.
 programsRouter.get('/', (req, res) => {
+  // فرصة طبيعية لفكّ أي حصة حُجزت لتوليدة لم تصل المكتبة أبداً.
+  reconcileGenerations(req.user.id);
+
   const rows = db
     .prepare('SELECT * FROM programs WHERE user_id = ? ORDER BY created_at DESC')
     .all(req.user.id);
@@ -53,6 +62,14 @@ programsRouter.put('/:id', (req, res) => {
     payload: JSON.stringify(entry),
     createdAt: String(program.createdAt || now),
     updatedAt: now,
+  });
+
+  // أي برنامج موجود في المكتبة يشغل حصة، حتى لو رُفع مباشرة دون توليد.
+  recordGeneration({
+    userId: req.user.id,
+    programId: String(req.params.id),
+    sport: program.sport,
+    planId: null,
   });
 
   res.json({ ok: true });
@@ -103,6 +120,14 @@ programsRouter.post('/sync', (req, res) => {
   });
 
   run();
+
+  // المزامنة تعكس المكتبة كاملة، فالحصص تتبعها: ما بقي محجوز وما زال
+  // يُحرَّر.
+  for (const id of keepIds) {
+    recordGeneration({ userId: req.user.id, programId: id, sport: null, planId: null });
+  }
+  releaseGenerationsNotIn(req.user.id, keepIds);
+
   res.json({ ok: true, count: keepIds.length });
 });
 
@@ -111,5 +136,7 @@ programsRouter.delete('/:id', (req, res) => {
     req.user.id,
     String(req.params.id),
   );
+  // حذف البرنامج يحرّر حصته فوراً — هذا هو الطريق الوحيد لتحريرها.
+  releaseGeneration(req.user.id, String(req.params.id));
   res.json({ ok: true });
 });

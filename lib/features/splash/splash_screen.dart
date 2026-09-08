@@ -10,6 +10,7 @@ import '../../routing/app_router.dart';
 import '../../state/auth_controller.dart';
 import '../../state/health_controller.dart';
 import '../../state/library_controller.dart';
+import '../../state/subscription_controller.dart';
 import '../auth/level_setup_screen.dart';
 import '../auth/login_screen.dart';
 import '../onboarding/onboarding_screen.dart';
@@ -56,6 +57,7 @@ class _SplashScreenState extends State<SplashScreen>
     final auth = context.read<AuthController>();
     final library = context.read<LibraryController>();
     final health = context.read<HealthController>();
+    final subscription = context.read<SubscriptionController>();
 
     await Future.wait<void>(<Future<void>>[
       auth.bootstrap(),
@@ -68,6 +70,13 @@ class _SplashScreenState extends State<SplashScreen>
     final user = auth.user;
     if (user != null) {
       _fireAndForget(library.loadFor(user.id));
+      // الصلاحية تُحمَّل في الخلفية: الشاشات المدفوعة تنتظرها، والباقي لا.
+      _fireAndForget(
+        subscription.bindAccount(
+          userId: user.id,
+          appAccountToken: user.appAccountToken,
+        ),
+      );
       if (user.healthSyncEnabled) _fireAndForget(health.bootstrap());
     }
 

@@ -4,8 +4,17 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 
+import crypto from 'node:crypto';
+
 import { requireAuth } from '../lib/auth.js';
 import { logAiUsage } from '../lib/db.js';
+import {
+  canAskCoach,
+  canCreateProgram,
+  consumeFreeGeneration,
+  entitlementSync,
+  recordGeneration,
+} from '../lib/subscriptions.js';
 import { generateMockProgram } from '../lib/mock_program.js';
 import { SYSTEM_PROMPT, buildPrompt, extractJson, levelInfo } from '../lib/prompt.js';
 
@@ -141,6 +150,44 @@ const adviceLimiter = rateLimit({
 });
 
 // ---------------------------------------------------------------------
+// بوابات الاشتراك
+// ---------------------------------------------------------------------
+//
+// التحقق من الصلاحية يقع هنا، على الخادم، وقبل أي نداء مدفوع للذكاء
+// الاصطناعي. أي بوابة في التطبيق وحده قابلة للتجاوز، ولا تحمي التكلفة.
+//
+// نستخدم 402 لا 403: عميل التطبيق يعامل 401 و403 كانتهاء جلسة ويخرج
+// المستخدم، ونحن هنا لا نريد إخراجه بل عرض صفحة الاشتراك.
+
+function subscriptionBlocked(res, gate) {
+  const { plan, activePrograms, isSubscribed } = gate.entitlement;
+  return res.status(402).json({
+    code: gate.code,
+    message: gate.message,
+    entitlement: {
+      planId: plan.id,
+      isSubscribed,
+      programSlots: plan.programSlots,
+      activePrograms,
+    },
+  });
+}
+
+/// يمنع توليد برنامج جديد إذا استُهلكت الحصة أو انتهى الاشتراك.
+function requireProgramSlot(req, res, next) {
+  const gate = canCreateProgram(req.user.id);
+  if (gate.allowed) return next();
+  return subscriptionBlocked(res, gate);
+}
+
+/// استشارة المدرّب الذكي ميزة للمشتركين.
+function requireCoachAccess(req, res, next) {
+  const gate = canAskCoach(req.user.id);
+  if (gate.allowed) return next();
+  return subscriptionBlocked(res, gate);
+}
+
+// ---------------------------------------------------------------------
 // آلية إعادة المحاولة مع Exponential Backoff للأخطاء العابرة
 // ---------------------------------------------------------------------
 
@@ -172,11 +219,28 @@ async function callOpenAiWithRetry(apiCall, maxRetries = 2) {
   }
 }
 
+/**
+ * يحجز حصة للبرنامج المولَّد ويعيد معرّفه.
+ *
+ * المعرّف يُولَّد هنا لا في التطبيق: هو مفتاح الحصة، ولا يجوز أن يختاره
+ * الطرف الذي تُحسب عليه الحصة.
+ */
+function claimSlot(userId, sport) {
+  const programId = `prog_${crypto.randomUUID()}`;
+  recordGeneration({
+    userId,
+    programId,
+    sport,
+    planId: entitlementSync(userId).plan.id,
+  });
+  return programId;
+}
+
 // ---------------------------------------------------------------------
 // 1. مسار توليد البرنامج التدريبي (POST /ai/program)
 // ---------------------------------------------------------------------
 
-aiRouter.post('/program', requireAuth, generateLimiter, async (req, res) => {
+aiRouter.post('/program', requireAuth, generateLimiter, requireProgramSlot, async (req, res) => {
   const parsed = programRequestSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({
@@ -204,6 +268,8 @@ aiRouter.post('/program', requireAuth, generateLimiter, async (req, res) => {
       model: 'mock-generator',
       status: 'success',
     });
+    consumeFreeGeneration(userId);
+    program.id = claimSlot(userId, request.sport);
     return res.json({
       program,
       meta: {
@@ -280,6 +346,10 @@ aiRouter.post('/program', requireAuth, generateLimiter, async (req, res) => {
       status: 'success',
     });
 
+    // الحصة تُخصم بعد نجاح التوليد فقط: فشل الطلب لا يحرق تجربة المستخدم.
+    consumeFreeGeneration(userId);
+    program.id = claimSlot(userId, request.sport);
+
     res.json({
       program,
       meta: {
@@ -330,7 +400,7 @@ const COACH_SYSTEM_PROMPT = `أنت المدرب الذكي الرسمي في ت
   "warning": "تنبيه طبي وقائي عند وجود ألم أو null إن لم يكن هناك خطر"
 }`;
 
-aiRouter.post('/coach-advice', requireAuth, adviceLimiter, async (req, res) => {
+aiRouter.post('/coach-advice', requireAuth, adviceLimiter, requireCoachAccess, async (req, res) => {
   const parsed = coachAdviceInputSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({

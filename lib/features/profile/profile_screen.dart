@@ -11,8 +11,10 @@ import '../../routing/app_router.dart';
 import '../../state/auth_controller.dart';
 import '../../state/health_controller.dart';
 import '../../state/library_controller.dart';
+import '../../state/subscription_controller.dart';
 import '../auth/level_setup_screen.dart';
 import '../auth/login_screen.dart';
+import '../paywall/paywall_screen.dart';
 import 'edit_profile_screen.dart';
 
 /// حساب المستخدم وإعداداته.
@@ -25,6 +27,7 @@ class ProfileScreen extends StatelessWidget {
   Future<void> _signOut(BuildContext context) async {
     final auth = context.read<AuthController>();
     final library = context.read<LibraryController>();
+    final subscription = context.read<SubscriptionController>();
     final navigator = Navigator.of(context);
 
     final ok = await showConfirmDialog(
@@ -36,6 +39,7 @@ class ProfileScreen extends StatelessWidget {
     if (!ok) return;
 
     library.clear();
+    subscription.clear();
     await auth.signOut();
     await navigator.pushAndRemoveUntil(
       fadeThroughRoute<void>(const LoginScreen()),
@@ -46,6 +50,7 @@ class ProfileScreen extends StatelessWidget {
   Future<void> _deleteAccount(BuildContext context) async {
     final auth = context.read<AuthController>();
     final library = context.read<LibraryController>();
+    final subscription = context.read<SubscriptionController>();
     final navigator = Navigator.of(context);
     final messenger = ScaffoldMessenger.of(context);
 
@@ -70,6 +75,7 @@ class ProfileScreen extends StatelessWidget {
     }
 
     library.clear();
+    subscription.clear();
     await navigator.pushAndRemoveUntil(
       fadeThroughRoute<void>(const LoginScreen()),
       (route) => false,
@@ -137,6 +143,9 @@ class ProfileScreen extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: Space.x3),
+                        const SectionHeader(title: 'الاشتراك'),
+                        const _SubscriptionTile(),
+                        const SizedBox(height: Space.xxl),
                         const SectionHeader(title: 'التدريب'),
                         _Tile(
                           icon: user.level.icon,
@@ -182,6 +191,58 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+}
+
+/// حالة الاشتراك ومدخل صفحة الباقات.
+///
+/// الصفّ يقول ما يملكه المستخدم الآن وكم بقي له من حصص — لا «اشترك الآن»
+/// وحدها. المشترك يحتاج أن يرى خطته بقدر ما يحتاج غيرُه أن يرى العرض.
+class _SubscriptionTile extends StatelessWidget {
+  const _SubscriptionTile();
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = context.watch<SubscriptionController>();
+    final entitlement = controller.entitlement;
+    final plan = entitlement.plan;
+
+    final String subtitle;
+    if (entitlement.billingIssue) {
+      subtitle = 'فيه مشكلة في الدفع — حدّث طريقة الدفع ليرجع اشتراكك';
+    } else if (!entitlement.isSubscribed) {
+      subtitle = entitlement.freeTrialUsedUp
+          ? 'استهلكت برنامجك المجاني — اشترك لتكمل'
+          : 'اشترك لتبني برامجك مع المدرّب الذكي';
+    } else if (plan.isUnlimited) {
+      subtitle = 'برامج بلا حدود · ${entitlement.activePrograms} برنامج نشط';
+    } else {
+      final left = entitlement.remainingSlots ?? 0;
+      subtitle = left > 0
+          ? '${plan.slotsLabel} · بقي لك $left'
+          : '${plan.slotsLabel} · استخدمت كل حصصك';
+    }
+
+    return _Tile(
+      icon: entitlement.isSubscribed
+          ? Icons.workspace_premium_rounded
+          : Icons.lock_open_rounded,
+      accent: entitlement.billingIssue
+          ? AppColors.warning
+          : entitlement.isSubscribed
+              ? AppColors.mint
+              : null,
+      title: entitlement.isSubscribed ? plan.title : 'باقات الاشتراك',
+      subtitle: subtitle,
+      trailing: controller.isRefreshing
+          ? const SizedBox(
+              width: IconSizes.md,
+              height: IconSizes.md,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : null,
+      onTap: () => context.pushPage(const PaywallScreen()),
+    );
+  }
 }
 
 /// ربط بيانات الصحة.

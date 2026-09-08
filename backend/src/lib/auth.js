@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import jwt from 'jsonwebtoken';
 
 import { db, toPublicUser } from './db.js';
@@ -28,6 +30,14 @@ export function requireAuth(req, res, next) {
   const row = db.prepare('SELECT * FROM users WHERE id = ?').get(payload.sub);
   if (!row) {
     return res.status(401).json({ code: 'unauthorized', message: 'الحساب غير موجود.' });
+  }
+
+  // شبكة أمان: أي حساب أُنشئ قبل وجود رمز الحساب يحصل عليه هنا، فلا
+  // تصل شاشة الاشتراك أبداً إلى مستخدم بلا رمز.
+  if (!row.app_account_token) {
+    const token = randomUUID();
+    db.prepare('UPDATE users SET app_account_token = ? WHERE id = ?').run(token, row.id);
+    row.app_account_token = token;
   }
 
   req.userRow = row;

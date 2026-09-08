@@ -9,6 +9,7 @@ import '../../core/widgets/app_widgets.dart';
 import '../../routing/app_router.dart';
 import '../../state/auth_controller.dart';
 import '../../state/library_controller.dart';
+import '../../state/subscription_controller.dart';
 import '../shell/main_shell.dart';
 import 'forgot_password_screen.dart';
 import 'level_setup_screen.dart';
@@ -75,6 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final auth = context.read<AuthController>();
     final library = context.read<LibraryController>();
+    final subscription = context.read<SubscriptionController>();
     final navigator = Navigator.of(context);
 
     final ok = await auth.signIn(
@@ -87,6 +89,10 @@ class _LoginScreenState extends State<LoginScreen> {
     if (user == null) return;
 
     await library.loadFor(user.id);
+    await subscription.bindAccount(
+      userId: user.id,
+      appAccountToken: user.appAccountToken,
+    );
     await navigator.pushAndRemoveUntil(
       fadeThroughRoute<void>(
         user.hasCompletedOnboarding

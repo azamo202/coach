@@ -8,16 +8,38 @@ import 'core/config/app_config.dart';
 import 'core/theme/app_theme.dart';
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/program_repository.dart';
+import 'data/repositories/subscription_repository.dart';
 import 'data/services/ai_program_service.dart';
 import 'data/services/api_client.dart';
 import 'data/services/health_service.dart';
+import 'data/services/iap_service.dart';
 import 'data/services/local_store.dart';
 import 'state/auth_controller.dart';
 import 'state/health_controller.dart';
 import 'state/library_controller.dart';
+import 'state/subscription_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // حارس إعداد: نسخة إصدار تخاطب عنواناً محلياً أو غير مشفّر هي تطبيق
+  // ميت في يد المستخدم. نكسر البناء في وضع التطوير حيث يُرى الخطأ، ولا
+  // نُسقط التطبيق في يد مستخدم حقيقي — هناك نكتفي بتسجيله.
+  assert(
+    () {
+      if (kReleaseMode && !AppConfig.isProductionApi) {
+        throw StateError(
+          'API_BASE_URL غير صالح للإنتاج: ${AppConfig.apiBaseUrl}
+'
+          'ابنِ بـ: flutter build ipa --dart-define=API_BASE_URL=https://...',
+        );
+      }
+      return true;
+    }(),
+  );
+  if (kReleaseMode && !AppConfig.isProductionApi) {
+    debugPrint('FATAL CONFIG: API_BASE_URL = ${AppConfig.apiBaseUrl}');
+  }
 
   if (!kIsWeb) {
     try {
@@ -44,6 +66,9 @@ Future<void> main() async {
 
   final aiService = AiProgramService(api: api);
 
+  final iapService = IapService();
+  final subscriptionRepository = SubscriptionRepository(api);
+
   runApp(
     MultiProvider(
       providers: [
@@ -67,6 +92,17 @@ Future<void> main() async {
             service: HealthService(),
             store: store,
           ),
+        ),
+        // `lazy: false` مقصود: StoreKit لا يسلّم العمليات المعلّقة إلا بعد
+        // أن يبدأ أحد الإصغاء. لو انتظرنا أول قراءة للمزوّد لضاعت دفعة
+        // اكتملت بينما كان التطبيق مغلقاً.
+        ChangeNotifierProvider<SubscriptionController>(
+          lazy: false,
+          create: (_) => SubscriptionController(
+            iap: iapService,
+            repository: subscriptionRepository,
+            store: store,
+          )..start(),
         ),
       ],
       child: const TatawwarApp(),

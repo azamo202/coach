@@ -12,8 +12,9 @@ import '../../data/models/program_progress.dart';
 import '../../routing/app_router.dart';
 import '../../state/auth_controller.dart';
 import '../../state/library_controller.dart';
+import '../../state/subscription_controller.dart';
 import '../home/widgets/program_list_tile.dart';
-import '../sports/new_program_screen.dart';
+import '../paywall/subscription_gate.dart';
 import 'program_screen.dart';
 
 /// كل الرياضات المحفوظة.
@@ -59,6 +60,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   Future<void> _confirmDelete(SavedProgram entry) async {
     final library = context.read<LibraryController>();
+    final subscription = context.read<SubscriptionController>();
     final ok = await showConfirmDialog(
       context,
       title: 'حذف ${entry.program.sport}؟',
@@ -68,6 +70,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
     if (!ok) return;
     await library.delete(entry.id);
+    // الحذف حرّر حصة على الخادم؛ نحدّث الصلاحية ليظهر ذلك في الواجهة.
+    await subscription.refresh();
   }
 
   @override
@@ -144,7 +148,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         title: 'ما عندك برامج بعد',
         message: 'اختر أي رياضة، وابنِ أول برنامج تدريبي متدرّج لك.',
         actionLabel: 'أنشئ برنامجاً',
-        onAction: () => context.pushPage(const NewProgramScreen()),
+        onAction: () => openNewProgram(context),
       );
     }
 

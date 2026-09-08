@@ -56,10 +56,12 @@ authRouter.post('/register', (req, res) => {
   const id = `u_${crypto.randomUUID()}`;
   const createdAt = new Date().toISOString();
 
+  // رمز الحساب يُولَّد مع الحساب: StoreKit يحتاجه عند أول شراء، ولا يجوز
+  // أن يكون توليده مشروطاً بمرور المستخدم على شاشة الاشتراك.
   db.prepare(
-    `INSERT INTO users (id, name, email, password_hash, created_at)
-     VALUES (?, ?, ?, ?, ?)`,
-  ).run(id, name, email, bcrypt.hashSync(password, 12), createdAt);
+    `INSERT INTO users (id, name, email, password_hash, created_at, app_account_token)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+  ).run(id, name, email, bcrypt.hashSync(password, 12), createdAt, crypto.randomUUID());
 
   const row = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
   res.status(201).json({ token: signToken(id), user: toPublicUser(row) });

@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
-import '../../routing/app_router.dart';
 import '../../state/auth_controller.dart';
 import '../../state/health_controller.dart';
 import '../../state/library_controller.dart';
@@ -13,7 +12,7 @@ import '../home/home_screen.dart';
 import '../profile/profile_screen.dart';
 import '../program/library_screen.dart';
 import '../progress/progress_screen.dart';
-import '../sports/new_program_screen.dart';
+import '../paywall/subscription_gate.dart';
 
 /// الهيكل الرئيسي: أربع وجهات وزر إنشاء برنامج.
 ///
@@ -89,7 +88,7 @@ class _MainShellState extends State<MainShell> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: _NewProgramButton(
-        onTap: () => context.pushPage(const NewProgramScreen()),
+        onTap: () => openNewProgram(context),
       ),
       bottomNavigationBar: _BottomBar(index: _index, onSelect: _select),
     );

@@ -5,9 +5,12 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 
+import { isAppleRootAvailable } from './lib/apple/jws.js';
+import { isStoreApiConfigured, storeApiDiagnostics } from './lib/apple/store_api.js';
 import { aiRouter } from './routes/ai.js';
 import { authRouter } from './routes/auth.js';
 import { programsRouter } from './routes/programs.js';
+import { subscriptionsRouter } from './routes/subscriptions.js';
 
 const app = express();
 const PORT = Number(process.env.PORT || 8080);
@@ -24,12 +27,16 @@ const origins = (process.env.CORS_ORIGINS || '')
 app.use(cors({ origin: origins.length > 0 ? origins : true }));
 
 // حد عام لكل الطلبات لحماية الخدمة.
+//
+// إشعارات App Store مستثناة: Apple ترسلها من نطاق عناوينها الخاص وقد
+// تنفجر دفعة واحدة عند التجديد الجماعي، فخنقها يعني فقدان تحديثات دفع.
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 300,
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => req.originalUrl.split('?')[0] === '/subscriptions/apple/notifications',
   }),
 );
 
@@ -40,6 +47,7 @@ app.get('/health', (_req, res) => {
 app.use('/auth', authRouter);
 app.use('/programs', programsRouter);
 app.use('/ai', aiRouter);
+app.use('/subscriptions', subscriptionsRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ code: 'not_found', message: 'المسار غير موجود.' });
@@ -54,6 +62,30 @@ app.use((error, _req, res, _next) => {
   });
 });
 
+/// يطبع ما ينقص إعداد الاشتراكات عند الإقلاع بدل اكتشافه من شكوى مستخدم.
+function reportSubscriptionReadiness() {
+  const diagnostics = storeApiDiagnostics();
+  const missing = Object.entries(diagnostics)
+    .filter(([, present]) => !present)
+    .map(([key]) => key);
+
+  if (!isStoreApiConfigured()) {
+    console.warn(
+      `[startup] الاشتراكات معطّلة — ينقص إعداد App Store: ${missing.join(', ')}`,
+    );
+  }
+  if (!isAppleRootAvailable()) {
+    console.warn(
+      '[startup] شهادة Apple Root CA - G3 غير مثبّتة. إشعارات App Store سترفض. ' +
+        'شغّل: npm run fetch:apple-root',
+    );
+  }
+  if (isStoreApiConfigured() && isAppleRootAvailable()) {
+    console.log('[startup] الاشتراكات جاهزة ✓');
+  }
+}
+
 app.listen(PORT, () => {
   console.log(`coachmint-api listening on http://localhost:${PORT}`);
+  reportSubscriptionReadiness();
 });

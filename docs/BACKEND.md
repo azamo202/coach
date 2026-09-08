@@ -72,11 +72,27 @@ curl -X POST https://api.coachmint.app/auth/register \
 | `POST` | `/programs/sync` | مزامنة المكتبة كاملة (يحذف ما لم يعد على الجهاز) |
 | `DELETE` | `/programs/:id` | حذف برنامج |
 
+### الاشتراكات
+
+| الطريقة | المسار | الوصف |
+|---|---|---|
+| `GET` | `/subscriptions/me` | صلاحية المستخدم الحالية (يسأل Apple إن بدت قديمة) |
+| `GET` | `/subscriptions/plans` | كتالوج الباقات |
+| `POST` | `/subscriptions/apple/verify` | تأكيد عملية شراء وربطها بالحساب |
+| `POST` | `/subscriptions/apple/notifications` | إشعارات App Store V2 (عام، بتوقيع Apple) |
+| `GET` | `/subscriptions/diagnostics` | ما ينقص إعداد Apple — بلا كشف أسرار |
+
+التفاصيل الكاملة في [`docs/SUBSCRIPTIONS.md`](SUBSCRIPTIONS.md).
+
 ### توليد البرنامج
 
 ```
 POST /ai/program        (يتطلب مصادقة · 20 طلباً/ساعة لكل مستخدم)
 ```
+
+المسار محكوم ببوابة اشتراك. عند نفاد الحصة يرد **402** بالرمز
+`free_limit_reached` أو `program_limit_reached` — لا 401 ولا 403، حتى لا
+يُخرج التطبيقُ المستخدمَ من حسابه بدل عرض صفحة الاشتراك.
 
 **الطلب:**
 

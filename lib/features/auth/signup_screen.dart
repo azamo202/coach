@@ -12,6 +12,7 @@ import '../../core/widgets/app_widgets.dart';
 import '../../routing/app_router.dart';
 import '../../state/auth_controller.dart';
 import '../../state/library_controller.dart';
+import '../../state/subscription_controller.dart';
 import 'level_setup_screen.dart';
 import 'login_screen.dart';
 import 'widgets/auth_title.dart';
@@ -87,6 +88,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     final auth = context.read<AuthController>();
     final library = context.read<LibraryController>();
+    final subscription = context.read<SubscriptionController>();
     final navigator = Navigator.of(context);
 
     final ok = await auth.signUp(
@@ -97,7 +99,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (!mounted || !ok) return;
 
     final user = auth.user;
-    if (user != null) await library.loadFor(user.id);
+    if (user != null) {
+      await library.loadFor(user.id);
+      await subscription.bindAccount(
+        userId: user.id,
+        appAccountToken: user.appAccountToken,
+      );
+    }
 
     await navigator.pushAndRemoveUntil(
       fadeThroughRoute<void>(const LevelSetupScreen()),

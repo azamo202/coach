@@ -11,6 +11,8 @@ import '../../core/widgets/app_widgets.dart';
 import '../../data/models/fitness_level.dart';
 import '../../routing/app_router.dart';
 import '../../state/auth_controller.dart';
+import '../../state/subscription_controller.dart';
+import '../paywall/paywall_screen.dart';
 import '../shell/main_shell.dart';
 
 /// تحديد المستوى والهدف — آخر خطوة قبل دخول التطبيق، وصفحة التعديل لاحقاً.
@@ -104,11 +106,31 @@ class _LevelSetupScreenState extends State<LevelSetupScreen> {
         ..showSnackBar(const SnackBar(content: Text('تم تحديث مستواك')));
       navigator.pop();
     } else {
-      await navigator.pushAndRemoveUntil(
-        fadeThroughRoute<void>(const MainShell()),
-        (route) => false,
-      );
+      _finishOnboarding(navigator);
     }
+  }
+
+  /// ينهي التسجيل ويعرض الباقات مباشرةً.
+  ///
+  /// التطبيق مقفول خلف الاشتراك، فتأجيل الباقات إلى أول محاولة إنشاء يعني
+  /// أن أول ما يراه المستخدم شاشةٌ لا يستطيع فعل شيء فيها. نعرضها **فوق**
+  /// الهيكل الرئيسي لا بدلاً منه: زرّ الرجوع يبقى عاملاً، فلا يعلق أحد في
+  /// شاشة بلا مخرج — وهذا فرق بين حاجز واضح وبين تطبيق يبدو معطّلاً.
+  void _finishOnboarding(NavigatorState navigator) {
+    navigator.pushAndRemoveUntil(
+      fadeThroughRoute<void>(const MainShell()),
+      (route) => false,
+    );
+
+    if (context.read<SubscriptionController>().isSubscribed) return;
+    navigator.push(
+      fadeThroughRoute<void>(
+        const PaywallScreen(
+          reason: 'بقيت خطوة واحدة: اختر باقتك ليبني لك المدرّب الذكي '
+              'برنامجك الأول.',
+        ),
+      ),
+    );
   }
 
   @override

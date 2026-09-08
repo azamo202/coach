@@ -8,9 +8,9 @@ import '../../core/theme/app_typography.dart';
 import '../../core/utils/ar_plural.dart';
 import '../../core/widgets/app_widgets.dart';
 import '../../data/models/program_progress.dart';
-import '../../routing/app_router.dart';
 import '../../state/library_controller.dart';
-import '../sports/new_program_screen.dart';
+import '../../state/subscription_controller.dart';
+import '../paywall/subscription_gate.dart';
 import 'widgets/week_card.dart';
 
 /// تفاصيل برنامج واحد: أين وصلت، وما الأسبوع التالي.
@@ -62,6 +62,7 @@ class _ProgramScreenState extends State<ProgramScreen> {
 
   Future<void> _confirmDelete(SavedProgram entry) async {
     final library = context.read<LibraryController>();
+    final subscription = context.read<SubscriptionController>();
     final navigator = Navigator.of(context);
     final ok = await showConfirmDialog(
       context,
@@ -72,6 +73,8 @@ class _ProgramScreenState extends State<ProgramScreen> {
     );
     if (!ok) return;
     await library.delete(entry.id);
+    // الحذف حرّر حصة على الخادم؛ نحدّث الصلاحية ليظهر ذلك في الواجهة.
+    await subscription.refresh();
     navigator.pop();
   }
 
@@ -118,8 +121,9 @@ class _ProgramScreenState extends State<ProgramScreen> {
                       size: SportMark.md,
                     ),
                     trailing: _ProgramMenu(
-                      onRegenerate: () => context.pushPage(
-                        NewProgramScreen(presetSport: program.sport),
+                      onRegenerate: () => openNewProgram(
+                        context,
+                        presetSport: program.sport,
                       ),
                       onReset: () => _confirmReset(entry),
                       onDelete: () => _confirmDelete(entry),

@@ -34,6 +34,12 @@ backend/.env
 backend/data/*.db
 backend/data/*.db-*
 
+# مفاتيح Apple الخاصة — لا تُرفع إطلاقاً.
+backend/certs/*.p8
+backend/certs/*.pem
+backend/certs/*.key
+AuthKey_*.p8
+
 # Misc
 .DS_Store
 _scaffold/

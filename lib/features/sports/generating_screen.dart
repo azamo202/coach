@@ -10,6 +10,7 @@ import '../../core/widgets/app_widgets.dart';
 import '../../data/services/prompt_builder.dart';
 import '../../routing/app_router.dart';
 import '../../state/library_controller.dart';
+import '../../state/subscription_controller.dart';
 import '../program/program_screen.dart';
 
 /// شاشة انتظار التوليد.
@@ -58,13 +59,20 @@ class _GeneratingScreenState extends State<GeneratingScreen> {
 
   Future<void> _start() async {
     final library = context.read<LibraryController>();
+    final subscription = context.read<SubscriptionController>();
     final entry = await library.generateProgram(widget.request);
     if (!mounted) return;
 
     if (entry == null) {
       setState(() => _error = library.error ?? 'تعذّر توليد البرنامج');
+      // الفشل قد يكون سببه انتهاء الحصة على الخادم — نحدّث الصورة لتطابقه.
+      unawaited(subscription.refresh());
       return;
     }
+
+    // البرنامج الجديد شغل حصة: نحدّث الصلاحية حتى تعرض بقية الشاشات
+    // العدد الصحيح فوراً.
+    unawaited(subscription.refresh());
     await context.replaceWith(ProgramScreen(programId: entry.id));
   }
 

@@ -13,7 +13,12 @@
 - [ ] الأيقونة 1024×1024 بدون شفافية (شرط Apple)
 - [ ] صفحتا **سياسة الخصوصية** و**شروط الاستخدام** منشورتان على الإنترنت
       (روابطهما في `lib/core/config/app_config.dart` — حدّثهما)
-- [ ] `flutter test` يمر بالكامل
+- [ ] `flutter test` و`npm test` (في `backend/`) يمرّان بالكامل
+- [ ] **الاشتراكات جاهزة** — راجع [`docs/SUBSCRIPTIONS.md`](SUBSCRIPTIONS.md)
+      كاملاً: الباقات الثلاث *Ready to Submit*، مفتاح App Store Server API،
+      شهادة جذر Apple، ورابط إشعارات V2
+- [ ] **حساب Sandbox في ملاحظات المراجعة** — التطبيق مقفول بالكامل خلف
+      الاشتراك، فبدون حساب اختبار لا يرى المراجع أي محتوى ويُرفض التطبيق
 - [ ] اختبار على جهاز حقيقي: إنشاء حساب → تحديد المستوى → توليد برنامج →
       إكمال جلسة → إعادة فتح التطبيق والتأكد من حفظ التقدّم
 
@@ -37,8 +42,11 @@ open ios/Runner.xcworkspace
    - فعّل *Automatically manage signing*
    - اختر الـ Team
    - اضبط Bundle Identifier (مثل `com.coachmint.app`)
-2. اضغط **+ Capability** وأضف **HealthKit**
-3. **General → Deployment Info**: iOS 13.0 كحد أدنى، Portrait فقط
+2. اضغط **+ Capability** وأضف **HealthKit** و**In-App Purchase**
+3. **General → Deployment Info**: iOS **15.0** كحد أدنى، Portrait فقط
+
+   > 15.0 وليس 13.0: StoreKit 2 لا يعمل قبل iOS 15، وعلى الأقدم منها تفشل
+   > عمليات الشراء بصمت.
 
 ### 3. رفع البناء
 
