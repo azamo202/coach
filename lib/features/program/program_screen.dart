@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/utils/ar_plural.dart';
 import '../../core/widgets/app_widgets.dart';
 import '../../data/models/program_progress.dart';
 import '../../routing/app_router.dart';
@@ -101,98 +102,115 @@ class _ProgramScreenState extends State<ProgramScreen> {
         colors: colors,
         child: SafeArea(
           bottom: false,
-          child: ListView(
-            padding: const EdgeInsets.only(bottom: Space.x4),
-            children: <Widget>[
-              ScreenHeader(
-                title: program.sport,
-                subtitle: '${program.level.label} · ${program.goal.label}',
-                showBack: true,
-                leading: SportMark(
-                  sport: program.sport,
-                  colors: colors,
-                  size: SportMark.md,
-                ),
-                trailing: _ProgramMenu(
-                  onRegenerate: () => context.pushPage(
-                    NewProgramScreen(presetSport: program.sport),
-                  ),
-                  onReset: () => _confirmReset(entry),
-                  onDelete: () => _confirmDelete(entry),
-                ),
-                padding: const EdgeInsets.fromLTRB(
-                  Space.sm,
-                  Space.sm,
-                  Space.screenInset,
-                  Space.xl,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Space.screenInset,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    if (program.summary.isNotEmpty) ...<Widget>[
-                      Text(
-                        program.summary,
-                        style: AppType.body.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: Space.contentWidth),
+              child: ListView(
+                padding: const EdgeInsets.only(bottom: Space.x4),
+                children: <Widget>[
+                  ScreenHeader(
+                    title: program.sport,
+                    subtitle: '${program.level.label} · ${program.goal.label}',
+                    showBack: true,
+                    leading: SportMark(
+                      sport: program.sport,
+                      colors: colors,
+                      size: SportMark.md,
+                    ),
+                    trailing: _ProgramMenu(
+                      onRegenerate: () => context.pushPage(
+                        NewProgramScreen(presetSport: program.sport),
                       ),
-                      const SizedBox(height: Space.xl),
-                    ],
-                    _ProgressPanel(entry: entry, colors: colors),
-                    const SizedBox(height: Space.md),
-                    StatRow(
-                      tiles: <StatTile>[
-                        StatTile(
-                          value: '${program.totalWeeks}',
-                          label: 'أسابيع',
-                          icon: Icons.calendar_month_rounded,
+                      onReset: () => _confirmReset(entry),
+                      onDelete: () => _confirmDelete(entry),
+                    ),
+                    padding: const EdgeInsets.fromLTRB(
+                      Space.sm,
+                      Space.sm,
+                      Space.screenInset,
+                      Space.xl,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Space.screenInset,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        if (program.summary.isNotEmpty) ...<Widget>[
+                          Container(
+                            padding: const EdgeInsets.all(Space.lg),
+                            decoration: BoxDecoration(
+                              color: colors.first.withValues(alpha: 0.06),
+                              borderRadius: BorderRadius.circular(Radii.md),
+                              border: Border.all(
+                                color: colors.first.withValues(alpha: 0.16),
+                              ),
+                            ),
+                            child: Text(
+                              program.summary,
+                              style: AppType.body.copyWith(
+                                color: AppColors.textSecondary,
+                                height: 1.6,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: Space.xl),
+                        ],
+                        _ProgressPanel(entry: entry, colors: colors),
+                        const SizedBox(height: Space.md),
+                        StatRow(
+                          tiles: <StatTile>[
+                            StatTile(
+                              value: '${program.totalWeeks}',
+                              label: Ar.week.unit(program.totalWeeks),
+                              icon: Icons.date_range_rounded,
+                            ),
+                            StatTile(
+                              value: '${program.totalSessions}',
+                              label: Ar.session.unit(program.totalSessions),
+                              icon: Icons.task_alt_rounded,
+                            ),
+                            StatTile(
+                              value: '${program.totalExercises}',
+                              label: Ar.exercise.unit(program.totalExercises),
+                              icon: Icons.fitness_center_rounded,
+                            ),
+                          ],
                         ),
-                        StatTile(
-                          value: '${program.totalSessions}',
-                          label: 'جلسة',
-                          icon: Icons.event_available_rounded,
+                        const SizedBox(height: Space.x3),
+                        const SectionHeader(
+                          title: 'خطة الأسابيع',
+                          subtitle: 'كل أسبوع أصعب من الذي قبله',
                         ),
-                        StatTile(
-                          value: '${program.totalExercises}',
-                          label: 'تمرين',
-                          icon: Icons.fitness_center_rounded,
-                        ),
+                        for (var i = 0; i < program.weeks.length; i++)
+                          WeekRung(
+                            entry: entry,
+                            weekIndex: i,
+                            colors: colors,
+                            isCurrent: i == currentWeek,
+                            isLast: i == program.weeks.length - 1,
+                            expanded: _expandedWeek == i,
+                            onToggleExpand: () => setState(
+                              () =>
+                                  _expandedWeek = _expandedWeek == i ? null : i,
+                            ),
+                            onToggleSession: (dayIndex) {
+                              HapticFeedback.mediumImpact();
+                              context
+                                  .read<LibraryController>()
+                                  .toggleSession(entry.id, i, dayIndex);
+                            },
+                          ),
+                        const SizedBox(height: Space.x3),
+                        _Footer(entry: entry),
                       ],
                     ),
-                    const SizedBox(height: Space.x3),
-                    const SectionHeader(
-                      title: 'خطة الأسابيع',
-                      subtitle: 'كل أسبوع أصعب من الذي قبله',
-                    ),
-                    for (var i = 0; i < program.weeks.length; i++)
-                      WeekRung(
-                        entry: entry,
-                        weekIndex: i,
-                        colors: colors,
-                        isCurrent: i == currentWeek,
-                        isLast: i == program.weeks.length - 1,
-                        expanded: _expandedWeek == i,
-                        onToggleExpand: () => setState(
-                          () => _expandedWeek = _expandedWeek == i ? null : i,
-                        ),
-                        onToggleSession: (dayIndex) {
-                          HapticFeedback.mediumImpact();
-                          context
-                              .read<LibraryController>()
-                              .toggleSession(entry.id, i, dayIndex);
-                        },
-                      ),
-                    const SizedBox(height: Space.x3),
-                    _Footer(entry: entry),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -267,29 +285,52 @@ class _ProgressPanel extends StatelessWidget {
     final done = entry.progress.completedCount;
     final total = entry.program.totalSessions;
     final streak = entry.progress.streakDays;
+    final complete = entry.isComplete;
+    final accent = colors.first;
 
     return AppCard(
       padding: const EdgeInsets.all(Space.xl),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              Text(done.toString(), style: AppType.number(size: 30)),
-              const SizedBox(width: Space.xs),
-              Text('/ $total جلسة', style: AppType.bodySm),
-              const Spacer(),
-              if (streak > 0) ...<Widget>[
-                AppTag(
-                  label: '$streak يوم متتالٍ',
-                  icon: Icons.local_fire_department_rounded,
-                  color: AppColors.coral,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      Ar.outOf(done, total, Ar.session),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppType.h3,
+                    ),
+                    const SizedBox(height: Space.xxs),
+                    Text(
+                      complete ? 'أنهيت البرنامج كاملاً' : 'جلسات مكتملة',
+                      style: AppType.caption,
+                    ),
+                  ],
                 ),
-                const SizedBox(width: Space.sm),
-              ],
-              AppTag(label: '${entry.percent}٪', color: colors.first),
+              ),
+              const SizedBox(width: Space.sm),
+              CompletionBadge(
+                percent: entry.percent,
+                complete: complete,
+                accent: accent,
+              ),
             ],
           ),
+          // السلسلة سطر مستقلّ لا شارة في الصفّ نفسه: ثلاثة عناصر في صفّ
+          // واحد تفيض على شاشة 375 بكسل بمجرّد أن يبلغ العدّ خانتين.
+          if (streak > 0) ...<Widget>[
+            const SizedBox(height: Space.md),
+            AppTag(
+              label: '${Ar.day(streak)} متتالية',
+              icon: Icons.local_fire_department_rounded,
+              color: AppColors.coral,
+            ),
+          ],
           const SizedBox(height: Space.lg),
           ProgressBar(
             value: entry.ratio,
@@ -366,9 +407,9 @@ class _Tip extends StatelessWidget {
         const Padding(
           padding: EdgeInsets.only(top: Space.xs),
           child: Icon(
-            Icons.lightbulb_outline_rounded,
+            Icons.lightbulb_rounded,
             size: IconSizes.sm,
-            color: AppColors.textTertiary,
+            color: AppColors.mint,
           ),
         ),
         const SizedBox(width: Space.md),

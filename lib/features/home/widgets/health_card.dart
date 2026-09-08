@@ -45,7 +45,7 @@ class HealthCard extends StatelessWidget {
                     Text('نشاطك', style: AppType.h4),
                     const SizedBox(height: Space.xxs),
                     Text(
-                      'من $_sourceName · آخر ٧ أيام',
+                      'من $_sourceName · آخر 7 أيام',
                       style: AppType.caption,
                     ),
                   ],
@@ -85,7 +85,7 @@ class HealthCard extends StatelessWidget {
       return _note('نحتاج صلاحية القراءة. فعّلها من «حسابي ← ربط الصحة».');
     }
     if (!snapshot.hasData) {
-      return _note('ما سُجّل نشاط في آخر ٧ أيام.');
+      return _note('ما سُجّل نشاط في آخر 7 أيام.');
     }
 
     return Row(

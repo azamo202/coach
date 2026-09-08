@@ -157,6 +157,20 @@ void main() {
       return offenders;
     }
 
+    /// مثلها، لكن بعد حذف التعليقات.
+    ///
+    /// شرح الكود بالعربية يكتب أرقامه عربية-هندية كما تُكتب في أي نصّ عربي،
+    /// والقاعدة تخصّ ما يظهر على الشاشة لا ما يُقرأ في الملف.
+    List<String> offendersOutsideComments(Pattern pattern) {
+      final comment = RegExp(r'^\s*///?.*$', multiLine: true);
+      final offenders = <String>[];
+      for (final file in uiFiles()) {
+        final code = file.readAsStringSync().replaceAll(comment, '');
+        if (code.contains(pattern)) offenders.add(file.path);
+      }
+      return offenders;
+    }
+
     test('لا أنماط نصية خام — كل النصوص من AppType', () {
       expect(
         offendersOf('TextStyle('),
@@ -183,6 +197,48 @@ void main() {
 
     test('لا استخدام لـ withOpacity المهجورة', () {
       expect(offendersOf('withOpacity('), isEmpty);
+    });
+
+    test('لا مقاس خطّ خام — المقاسات كلها من سلّم AppType', () {
+      // `AppType.caption.copyWith(fontSize: 11)` يخترع درجة سادسة عشرة خارج
+      // السلّم. إن احتاج التطبيق مقاساً جديداً فمكانه app_typography.dart.
+      expect(
+        // SportMark يشتقّ مقاس حرفه من مقاس شارته نفسها — نسبة لا درجة
+        // جديدة في السلّم.
+        offendersOf('fontSize:', allow: <String>{'app_data.dart'}),
+        isEmpty,
+        reason: 'اختر نمطاً من AppType بدل تعديل مقاسه في الشاشة.',
+      );
+    });
+
+    test('لا أبيض ولا أسود خام — كل لون من AppColors', () {
+      // `Colors.white.withValues(alpha: 0.08)` حدّ رمادي لا يعرفه النظام،
+      // ويختلف عن AppColors.border في الدرجة وفي درجة اللون معاً.
+      expect(
+        offendersOf(RegExp(r'Colors\.(white|black)')),
+        isEmpty,
+        reason: 'استخدم AppColors.border أو surfaceElevated أو ما يماثلهما.',
+      );
+    });
+
+    test('لا ضباب زجاجي — العمق من الطبقة والحدّ لا من الـblur', () {
+      // الحجاب خلف الحوارات والأوراق السفلية من `AppColors.scrim`، والضباب
+      // زينة تُخفي التسلسل بدل أن تبنيه.
+      expect(
+        offendersOf(RegExp(r'BackdropFilter|ImageFilter\.blur')),
+        isEmpty,
+        reason: 'دليل الهوية يمنع الأسطح الزجاجية.',
+      );
+    });
+
+    test('الأرقام في نصوص الواجهة لاتينية لا هندية', () {
+      // سلّم الخطوط يعرض كل رقم بخط لاتيني جدولي، فرقم عربي-هندي مكتوب في
+      // نصّ ثابت يظهر بخطّ آخر بجوار رقم محسوب في السطر نفسه.
+      expect(
+        offendersOutsideComments(RegExp('[٠-٩]')),
+        isEmpty,
+        reason: 'اكتب الأرقام لاتينية كما تعرضها AppType.number.',
+      );
     });
 
     test('أسهم الاتجاه تُكتب باتجاه القراءة الطبيعي لا بشكلها النهائي', () {

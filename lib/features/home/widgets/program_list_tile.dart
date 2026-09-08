@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/utils/ar_plural.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../data/models/program_progress.dart';
 
-/// صفّ يعرض رياضة محفوظة مع نسبة إنجازها.
+/// صفّ رياضة محفوظة: الشارة، الاسم والمستوى، نسبة الإنجاز، ثم شريط التقدّم
+/// وسطر البيانات.
 ///
-/// نفس الصفّ يظهر في «الرئيسية» و«برامجي» — لا نسختين بمقاسين مختلفين.
+/// الصفّ واحد في «الرئيسية» و«برامجي» وفي الشبكة على الشاشات العريضة. كانت
+/// نسخة الشبكة تستبدل نسبة الإنجاز بزرّ الحذف، فتختفي أهم معلومة في البطاقة
+/// كلما اتّسعت الشاشة. الآن النسبة ثابتة، وزرّ الحذف يقف بجانبها حين يُطلب.
 class ProgramListTile extends StatelessWidget {
   const ProgramListTile({
     super.key,
@@ -19,6 +23,9 @@ class ProgramListTile extends StatelessWidget {
 
   final SavedProgram entry;
   final VoidCallback onTap;
+
+  /// حذف البرنامج. موجود في «برامجي» وحدها — بديل ظاهر للسحب، لا يعتمد
+  /// المستخدم معه على إيماءة وحدها.
   final VoidCallback? onDelete;
 
   @override
@@ -31,68 +38,75 @@ class ProgramListTile extends StatelessWidget {
     return AppCard(
       onTap: onTap,
       padding: const EdgeInsets.all(Space.lg),
-      semanticLabel: '${program.sport}، $done من $total جلسة، '
+      semanticLabel: '${program.sport}، ${Ar.outOf(done, total, Ar.session)}، '
           '${entry.percent} بالمئة',
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          SportMark(sport: program.sport, colors: colors, size: SportMark.md),
-          const SizedBox(width: Space.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Row(
+          Row(
+            children: <Widget>[
+              SportMark(
+                sport: program.sport,
+                colors: colors,
+                size: SportMark.md,
+              ),
+              const SizedBox(width: Space.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Flexible(
-                      child: Text(
-                        program.sport,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppType.h4,
-                      ),
+                    Text(
+                      program.sport,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppType.h3,
                     ),
-                    const SizedBox(width: Space.sm),
+                    const SizedBox(height: Space.xxs),
                     AppTag(
                       label: program.level.label,
                       color: program.level.color,
                       subtle: true,
                     ),
-                    if (entry.isComplete) ...<Widget>[
-                      const SizedBox(width: Space.sm),
-                      // الأيقونة مع النسبة ١٠٠٪ — العلامة لا تُنقل باللون وحده.
-                      const Icon(
-                        Icons.verified_rounded,
-                        size: IconSizes.sm,
-                        color: AppColors.mint,
-                      ),
-                    ],
                   ],
                 ),
-                const SizedBox(height: Space.md),
-                ProgressBar(value: entry.ratio, colors: colors, height: 6),
-                const SizedBox(height: Space.sm),
-                Text(
-                  '$done من $total جلسة · ${program.totalWeeks} أسابيع',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppType.caption,
+              ),
+              const SizedBox(width: Space.sm),
+              CompletionBadge(
+                percent: entry.percent,
+                complete: entry.isComplete,
+                accent: colors.first,
+              ),
+              if (onDelete != null)
+                AppIconButton(
+                  icon: Icons.delete_outline_rounded,
+                  tooltip: 'حذف ${program.sport}',
+                  color: AppColors.textTertiary,
+                  onPressed: onDelete,
                 ),
-              ],
-            ),
+            ],
           ),
-          const SizedBox(width: Space.md),
-          if (onDelete != null)
-            AppIconButton(
-              icon: Icons.delete_outline_rounded,
-              tooltip: 'حذف ${program.sport}',
-              color: AppColors.textTertiary,
-              onPressed: onDelete,
-            )
-          else
-            Text(
-              '${entry.percent}٪',
-              style: AppType.number(size: 15, color: colors.first),
-            ),
+          const SizedBox(height: Space.md),
+          ProgressBar(value: entry.ratio, colors: colors, height: 6),
+          const SizedBox(height: Space.sm),
+          Row(
+            children: <Widget>[
+              const Icon(
+                Icons.check_circle_outline_rounded,
+                size: IconSizes.sm - 2,
+                color: AppColors.textTertiary,
+              ),
+              const SizedBox(width: Space.xs),
+              Text(Ar.outOf(done, total, Ar.session), style: AppType.caption),
+              const Spacer(),
+              const Icon(
+                Icons.schedule_rounded,
+                size: IconSizes.sm - 2,
+                color: AppColors.textTertiary,
+              ),
+              const SizedBox(width: Space.xs),
+              Text(Ar.week(program.totalWeeks), style: AppType.caption),
+            ],
+          ),
         ],
       ),
     );

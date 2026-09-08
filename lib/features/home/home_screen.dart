@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/utils/ar_plural.dart';
 import '../../core/widgets/app_widgets.dart';
 import '../../data/models/app_user.dart';
 import '../../data/models/program_progress.dart';
@@ -53,54 +54,59 @@ class HomeScreen extends StatelessWidget {
               await library.loadFor(user.id, force: true);
               if (user.healthSyncEnabled) await health.refresh();
             },
-            child: CustomScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: <Widget>[
-                SliverToBoxAdapter(
-                  child: ScreenHeader(
-                    title: user?.name ?? 'صديقي',
-                    subtitle: _greeting,
-                    trailing: user == null
-                        ? null
-                        : AppTag(
-                            label: user.level.label,
-                            icon: user.level.icon,
-                            color: user.level.color,
-                          ),
-                  ),
-                ),
-                if (firstRun)
-                  const SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(
-                        Space.screenInset,
-                        0,
-                        Space.screenInset,
-                        Space.bottomBarClearance,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: Space.contentWidth),
+                child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: <Widget>[
+                    SliverToBoxAdapter(
+                      child: ScreenHeader(
+                        title: user?.name ?? 'صديقي',
+                        subtitle: _greeting,
+                        trailing: user == null
+                            ? null
+                            : AppTag(
+                                label: user.level.label,
+                                icon: user.level.icon,
+                                color: user.level.color,
+                              ),
                       ),
-                      child: _FirstRunView(),
                     ),
-                  )
-                else
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(
-                      Space.screenInset,
-                      0,
-                      Space.screenInset,
-                      Space.bottomBarClearance,
-                    ),
-                    sliver: SliverToBoxAdapter(
-                      child: loading
-                          ? const _HomeSkeleton()
-                          : _Content(
-                              library: library,
-                              health: health,
-                              user: user,
-                            ),
-                    ),
-                  ),
-              ],
+                    if (firstRun)
+                      const SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            Space.screenInset,
+                            0,
+                            Space.screenInset,
+                            Space.bottomBarClearance,
+                          ),
+                          child: _FirstRunView(),
+                        ),
+                      )
+                    else
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(
+                          Space.screenInset,
+                          0,
+                          Space.screenInset,
+                          Space.bottomBarClearance,
+                        ),
+                        sliver: SliverToBoxAdapter(
+                          child: loading
+                              ? const _HomeSkeleton()
+                              : _Content(
+                                  library: library,
+                                  health: health,
+                                  user: user,
+                                ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -164,7 +170,7 @@ class _Content extends StatelessWidget {
           const SizedBox(height: Space.x3),
           SectionHeader(
             title: 'رياضاتك',
-            subtitle: '${library.entries.length} برنامج محفوظ',
+            subtitle: '${Ar.sport(library.entries.length)} محفوظة',
             actionLabel: hidden > 0 ? 'عرض الكل' : null,
             onAction: hidden > 0
                 ? () => ShellNavigation.maybeOf(context)?.goTo(1)
@@ -531,7 +537,7 @@ class _QuickStats extends StatelessWidget {
       tiles: <StatTile>[
         StatTile(
           value: '${library.totalCompletedSessions}',
-          label: 'جلسة مكتملة',
+          label: '${Ar.session.unit(library.totalCompletedSessions)} مكتملة',
           icon: Icons.check_circle_outline_rounded,
         ),
         StatTile(

@@ -43,7 +43,23 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordFocusNode = FocusNode();
 
   @override
+  void initState() {
+    super.initState();
+    _emailController.addListener(_clearErrorOnType);
+    _passwordController.addListener(_clearErrorOnType);
+  }
+
+  void _clearErrorOnType() {
+    final auth = context.read<AuthController>();
+    if (auth.error != null) {
+      auth.clearError();
+    }
+  }
+
+  @override
   void dispose() {
+    _emailController.removeListener(_clearErrorOnType);
+    _passwordController.removeListener(_clearErrorOnType);
     _emailController.dispose();
     _passwordController.dispose();
     _passwordFocusNode.dispose();
@@ -91,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Center(
             child: ConstrainedBox(
               // على الشاشات العريضة يبقى النموذج بعرض مقروء بدل أن يتمدّد.
-              constraints: const BoxConstraints(maxWidth: 420),
+              constraints: const BoxConstraints(maxWidth: Space.formWidth),
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(
                   Space.screenInset,
@@ -176,7 +192,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   : Padding(
                                       padding:
                                           const EdgeInsets.only(top: Space.md),
-                                      child: AppNotice(message: auth.error!),
+                                      child: AppNotice(
+                                        message: auth.error!,
+                                        onDismiss: auth.clearError,
+                                      ),
                                     ),
                             ),
                             const SizedBox(height: Space.xl),

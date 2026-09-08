@@ -111,7 +111,7 @@ class _SplashScreenState extends State<SplashScreen>
                 ).animate(_wordIn),
                 child: Column(
                   children: <Widget>[
-                    const CoachMintLogo(showMark: false, fontSize: 32),
+                    const CoachMintLogo(showMark: false, wordmarkSize: 32),
                     const SizedBox(height: Space.sm),
                     Text(AppConfig.appTagline, style: AppType.bodySm),
                   ],

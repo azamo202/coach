@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/utils/ar_plural.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../data/models/program_progress.dart';
 import '../../../data/models/training_program.dart';
@@ -397,16 +398,14 @@ class _DayTile extends StatelessWidget {
         onTap: onOpen,
         borderRadius: BorderRadius.circular(Radii.md),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            Space.sm,
-            Space.sm,
-            Space.md,
-            Space.sm,
+          padding: const EdgeInsets.symmetric(
+            horizontal: Space.md,
+            vertical: Space.sm + 2,
           ),
           child: Row(
             children: <Widget>[
               _CheckButton(done: done, colors: colors, onTap: onToggle),
-              const SizedBox(width: Space.sm),
+              const SizedBox(width: Space.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -423,8 +422,8 @@ class _DayTile extends StatelessWidget {
                     ),
                     const SizedBox(height: Space.xxs),
                     Text(
-                      '${day.exercises.length} تمارين · '
-                      '${day.durationMinutes} دقيقة'
+                      '${Ar.exercise(day.exercises.length)} · '
+                      '${Ar.minute(day.durationMinutes)}'
                       '${day.focus.isEmpty ? '' : ' · ${day.focus}'}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -481,9 +480,13 @@ class _CheckButton extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: done ? LinearGradient(colors: colors) : null,
+                  color: done ? null : AppColors.surfaceElevated,
                   border: done
                       ? null
-                      : Border.all(color: AppColors.border, width: 2),
+                      : Border.all(
+                          color: colors.first.withValues(alpha: 0.38),
+                          width: 1.5,
+                        ),
                 ),
                 child: done
                     ? const Icon(

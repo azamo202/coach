@@ -1,6 +1,9 @@
 /// إعدادات التطبيق المركزية.
 ///
-/// يمكن تمرير القيم وقت البناء دون تعديل الكود:
+/// جميع العمليات الذكية تمر حصراً عبر خادم الباك إند الآمن (Production Architecture)
+/// لحماية مفاتيح الذكاء الاصطناعي وتطبيق قواعد التحقق وتتبع الاستهلاك.
+///
+/// يمكن تمرير عنوان السيرفر وقت البناء أو التشغيل:
 /// flutter run --dart-define=API_BASE_URL=https://api.coachmint.app
 class AppConfig {
   const AppConfig._();
@@ -11,28 +14,14 @@ class AppConfig {
   static const String privacyPolicyUrl = 'https://coachmint.app/privacy';
   static const String termsUrl = 'https://coachmint.app/terms';
 
-  /// عنوان الباك إند. اتركه فارغاً لتشغيل التطبيق بوضع محلي بالكامل
-  /// (حسابات وبرامج مخزنة على الجهاز) — مفيد للتجربة والعرض.
+  /// عنوان الباك إند. الافتراضي للتطوير المحلي هو http://localhost:8080
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: '',
+    defaultValue: 'http://localhost:8080',
   );
 
-  /// عند true يعمل التطبيق بالكامل على الجهاز بدون سيرفر.
-  static bool get isOfflineMode => apiBaseUrl.trim().isEmpty;
-
-  /// مفتاح Anthropic — للتطوير المحلي فقط.
-  /// في الإنتاج يجب أن يمر التوليد عبر الباك إند حتى لا يُشحن المفتاح مع التطبيق.
-  static const String anthropicApiKeyDev = String.fromEnvironment(
-    'ANTHROPIC_API_KEY',
-    defaultValue: '',
-  );
-
-  static const String anthropicModel = 'claude-sonnet-4-6';
-  static const String anthropicVersion = '2023-06-01';
-  static const int anthropicMaxTokens = 8000;
-
-  static const Duration networkTimeout = Duration(seconds: 90);
+  /// مهلة الاتصال بالشبكة لعمليات التوليد والتحليل.
+  static const Duration networkTimeout = Duration(seconds: 120);
 
   /// أقصى عدد رياضات محفوظة لكل مستخدم.
   static const int maxSavedSports = 12;

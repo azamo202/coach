@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/utils/ar_plural.dart';
 import '../../core/widgets/app_widgets.dart';
 import '../../data/models/program_progress.dart';
 import '../../routing/app_router.dart';
@@ -56,64 +57,70 @@ class ProgressScreen extends StatelessWidget {
       body: BrandBackdrop(
         child: SafeArea(
           bottom: false,
-          child: ListView(
-            padding: const EdgeInsets.only(bottom: Space.bottomBarClearance),
-            children: <Widget>[
-              const ScreenHeader(
-                title: 'تقدّمي',
-                subtitle: 'كل رياضاتك في مكان واحد',
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Space.screenInset,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    _OverallCard(library: library),
-                    const SizedBox(height: Space.md),
-                    StatRow(
-                      tiles: <StatTile>[
-                        StatTile(
-                          value: '${library.entries.length}',
-                          label: 'رياضة',
-                          icon: Icons.sports_score_rounded,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: Space.contentWidth),
+              child: ListView(
+                padding: const EdgeInsets.only(bottom: Space.bottomBarClearance),
+                children: <Widget>[
+                  const ScreenHeader(
+                    title: 'تقدّمي',
+                    subtitle: 'كل رياضاتك في مكان واحد',
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Space.screenInset,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        _OverallCard(library: library),
+                        const SizedBox(height: Space.md),
+                        StatRow(
+                          tiles: <StatTile>[
+                            StatTile(
+                              value: '${library.entries.length}',
+                              label: Ar.sport.unit(library.entries.length),
+                              icon: Icons.sports_score_rounded,
+                            ),
+                            StatTile(
+                              value: '${library.totalCompletedSessions}',
+                              label:
+                                  Ar.session.unit(library.totalCompletedSessions),
+                              icon: Icons.check_circle_outline_rounded,
+                            ),
+                            StatTile(
+                              value: '${library.bestStreak}',
+                              label: 'يوم متتالٍ',
+                              icon: Icons.local_fire_department_rounded,
+                              accent:
+                                  library.bestStreak > 0 ? AppColors.coral : null,
+                            ),
+                          ],
                         ),
-                        StatTile(
-                          value: '${library.totalCompletedSessions}',
-                          label: 'جلسة مكتملة',
-                          icon: Icons.check_circle_outline_rounded,
+                        const SizedBox(height: Space.x3),
+                        const SectionHeader(
+                          title: 'آخر 7 أيام',
+                          subtitle: 'عدد الجلسات التي أنجزتها كل يوم',
                         ),
-                        StatTile(
-                          value: '${library.bestStreak}',
-                          label: 'يوم متتالٍ',
-                          icon: Icons.local_fire_department_rounded,
-                          accent:
-                              library.bestStreak > 0 ? AppColors.coral : null,
-                        ),
+                        _WeeklyChart(library: library),
+                        const SizedBox(height: Space.x3),
+                        const SectionHeader(title: 'تفصيل كل رياضة'),
+                        for (final entry in library.entries) ...<Widget>[
+                          _SportProgressRow(
+                            entry: entry,
+                            onTap: () => context.pushPage(
+                              ProgramScreen(programId: entry.id),
+                            ),
+                          ),
+                          const SizedBox(height: Space.md),
+                        ],
                       ],
                     ),
-                    const SizedBox(height: Space.x3),
-                    const SectionHeader(
-                      title: 'آخر ٧ أيام',
-                      subtitle: 'عدد الجلسات التي أنجزتها كل يوم',
-                    ),
-                    _WeeklyChart(library: library),
-                    const SizedBox(height: Space.x3),
-                    const SectionHeader(title: 'تفصيل كل رياضة'),
-                    for (final entry in library.entries) ...<Widget>[
-                      _SportProgressRow(
-                        entry: entry,
-                        onTap: () => context.pushPage(
-                          ProgramScreen(programId: entry.id),
-                        ),
-                      ),
-                      const SizedBox(height: Space.md),
-                    ],
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -145,14 +152,13 @@ class _OverallCard extends StatelessWidget {
                 Text('إجمالي تقدّمك', style: AppType.h3),
                 const SizedBox(height: Space.sm),
                 Text(
-                  '${library.totalCompletedSessions} من '
-                  '${library.totalSessions} جلسة، عبر '
-                  '${library.entries.length} رياضة.',
+                  '${Ar.outOf(library.totalCompletedSessions, library.totalSessions, Ar.session)}'
+                  '، عبر ${Ar.sport(library.entries.length)}.',
                   style: AppType.bodySm,
                 ),
                 const SizedBox(height: Space.md),
                 AppTag(
-                  label: '${library.sessionsThisWeek} جلسة هذا الأسبوع',
+                  label: '${Ar.session(library.sessionsThisWeek)} هذا الأسبوع',
                   icon: Icons.calendar_today_rounded,
                 ),
               ],
@@ -179,7 +185,7 @@ class _WeeklyChart extends StatelessWidget {
     'أحد',
   ];
 
-  /// عدد الجلسات المكتملة في كل يوم من آخر ٧ أيام (الأقدم أولاً).
+  /// عدد الجلسات المكتملة في كل يوم من آخر 7 أيام (الأقدم أولاً).
   List<int> _dailyCounts() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -208,7 +214,7 @@ class _WeeklyChart extends StatelessWidget {
       label: 'جلسات آخر سبعة أيام',
       value: total == 0
           ? 'ما فيه جلسات مسجّلة'
-          : '$total جلسة، أعلى يوم $maxCount',
+          : '${Ar.session(total)}، أعلى يوم ${Ar.session(maxCount)}',
       child: ExcludeSemantics(
         child: AppCard(
           padding: const EdgeInsets.fromLTRB(
@@ -231,7 +237,7 @@ class _WeeklyChart extends StatelessWidget {
                           getTooltipColor: (_) => AppColors.surfaceHigh,
                           getTooltipItem: (group, i, rod, rodIndex) =>
                               BarTooltipItem(
-                            '${rod.toY.round()} جلسة',
+                            Ar.session(rod.toY.round()),
                             AppType.caption.copyWith(
                               color: AppColors.textPrimary,
                             ),
@@ -248,7 +254,36 @@ class _WeeklyChart extends StatelessWidget {
                       ),
                       borderData: FlBorderData(show: false),
                       titlesData: FlTitlesData(
-                        topTitles: const AxisTitles(),
+                        // القيمة مكتوبة فوق عمودها مباشرة بدل محور جانبي:
+                        // سبعة أعمدة بأعداد صغيرة لا تستحق محوراً كاملاً،
+                        // وبدون رقم يبقى ارتفاع العمود شكلاً لا معلومة.
+                        topTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 22,
+                            getTitlesWidget: (value, meta) {
+                              final index = value.toInt();
+                              if (index < 0 || index > 6) {
+                                return const SizedBox.shrink();
+                              }
+                              final count = counts[index];
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                  bottom: Space.xs,
+                                ),
+                                child: Text(
+                                  '$count',
+                                  style: AppType.number(
+                                    size: 12,
+                                    color: count == 0
+                                        ? AppColors.textTertiary
+                                        : AppColors.textPrimary,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                         rightTitles: const AxisTitles(),
                         leftTitles: const AxisTitles(),
                         bottomTitles: AxisTitles(

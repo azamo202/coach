@@ -1,106 +1,93 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 
 import '../../core/config/app_config.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/app_exception.dart';
+import '../models/coach_advice.dart';
 import '../models/training_program.dart';
 import 'api_client.dart';
 import 'prompt_builder.dart';
 
-/// يولّد البرامج التدريبية عبر Claude.
+/// خدمة الذكاء الاصطناعي لتوليد البرامج الرياضية وتقديم استشارات التدريب.
 ///
-/// في الإنتاج: يمر الطلب عبر الباك إند حتى لا يُشحن مفتاح Anthropic داخل
-/// التطبيق (شرط أساسي لقبول التطبيق في المتاجر ولحماية المفتاح).
-/// في التطوير المحلي: يمكن الاتصال مباشرة عبر `--dart-define=ANTHROPIC_API_KEY=...`.
+/// تم تصميم الخدمة وفق البنية الآمنة الموصى بها للإنتاج:
+/// جميع الطلبات تمر حصراً عبر خادم الباك إند الآمن لحماية مفاتيح OpenAI
+/// وتطبيق آليات التحقق المزدوج وإعادة المحاولة وتتبع الاستهلاك.
 class AiProgramService {
-  AiProgramService({ApiClient? api, http.Client? httpClient})
-      : _api = api,
-        _http = httpClient ?? http.Client();
+  AiProgramService({required ApiClient? api}) : _api = api;
 
   final ApiClient? _api;
-  final http.Client _http;
 
+  /// توليد برنامج تدريبي مخصص عبر الباك إند المتصل بـ OpenAI.
   Future<TrainingProgram> generate(ProgramRequest request) async {
-    final raw = AppConfig.isOfflineMode || _api == null
-        ? await _generateDirect(request)
-        : await _generateViaBackend(request);
+    final client = _api;
+    if (client == null) {
+      throw const AppException(
+        'تعذّر الاتصال بخادم CoachMint. تأكد من تشغيل السيرفر.',
+        code: 'server_unavailable',
+      );
+    }
 
-    return _toProgram(raw, request);
-  }
-
-  // ---------------------------------------------------------------------
-  // المسار الموصى به: عبر الباك إند
-  // ---------------------------------------------------------------------
-  Future<Map<String, dynamic>> _generateViaBackend(
-    ProgramRequest request,
-  ) async {
-    final response = await _api!.post(
+    final response = await client.post(
       '/ai/program',
       body: request.toJson(),
       timeout: AppConfig.networkTimeout,
     );
-    final program = response['program'];
-    if (program is Map) {
-      return program.map((k, v) => MapEntry(k.toString(), v));
+
+    final programData = response['program'];
+    if (programData is Map) {
+      final raw = programData.map((k, v) => MapEntry(k.toString(), v));
+      return _toProgram(raw, request);
     }
     throw AppException.aiBadFormat;
   }
 
-  // ---------------------------------------------------------------------
-  // مسار التطوير: اتصال مباشر بـ Anthropic
-  // ---------------------------------------------------------------------
-  Future<Map<String, dynamic>> _generateDirect(ProgramRequest request) async {
-    final key = AppConfig.anthropicApiKeyDev.trim();
-    if (key.isEmpty) throw AppException.missingApiKey;
-
-    late final http.Response response;
-    try {
-      response = await _http
-          .post(
-            Uri.parse('https://api.anthropic.com/v1/messages'),
-            headers: <String, String>{
-              'content-type': 'application/json',
-              'x-api-key': key,
-              'anthropic-version': AppConfig.anthropicVersion,
-            },
-            body: jsonEncode(<String, dynamic>{
-              'model': AppConfig.anthropicModel,
-              'max_tokens': AppConfig.anthropicMaxTokens,
-              'system': PromptBuilder.systemPrompt,
-              'messages': <Map<String, String>>[
-                <String, String>{
-                  'role': 'user',
-                  'content': PromptBuilder.build(request),
-                },
-              ],
-            }),
-          )
-          .timeout(AppConfig.networkTimeout);
-    } catch (error) {
-      debugPrint('AI request failed: $error');
-      throw AppException.network;
+  /// الحصول على استشارة تدريبية ذكية وآمنة من المدرب الذكي (OpenAI).
+  Future<CoachAdvice> getCoachAdvice({
+    required String question,
+    Exercise? exercise,
+    String? sport,
+    String? level,
+    String? goal,
+  }) async {
+    final client = _api;
+    if (client == null) {
+      throw const AppException(
+        'خدمة المدرب الذكي تتطلب الاتصال بالسيرفر.',
+        code: 'server_unavailable',
+      );
     }
 
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      debugPrint('AI HTTP ${response.statusCode}: ${response.body}');
-      throw AppException.aiFailed;
+    final response = await client.post(
+      '/ai/coach-advice',
+      body: <String, dynamic>{
+        'question': question,
+        if (exercise != null)
+          'exercise': <String, dynamic>{
+            'name': exercise.name,
+            'sets': exercise.sets,
+            'reps': exercise.reps,
+            'targetMuscles': exercise.targetMuscles,
+            'equipment': exercise.equipment,
+          },
+        'userContext': <String, dynamic>{
+          if (sport != null) 'sport': sport,
+          if (level != null) 'level': level,
+          if (goal != null) 'goal': goal,
+        },
+      },
+      timeout: const Duration(seconds: 45),
+    );
+
+    final adviceMap = response['advice'];
+    if (adviceMap is Map) {
+      return CoachAdvice.fromJson(
+        adviceMap.map((k, v) => MapEntry(k.toString(), v)),
+      );
     }
-
-    final decoded = jsonDecode(utf8.decode(response.bodyBytes));
-    if (decoded is! Map) throw AppException.aiBadFormat;
-
-    final content = decoded['content'];
-    if (content is! List) throw AppException.aiBadFormat;
-
-    final text = content
-        .whereType<Map>()
-        .map((block) => block['text']?.toString() ?? '')
-        .join();
-
-    return extractJson(text);
+    throw AppException.aiBadFormat;
   }
 
   // ---------------------------------------------------------------------
@@ -134,7 +121,7 @@ class AiProgramService {
     throw AppException.aiBadFormat;
   }
 
-  /// يحوّل الـ JSON الخام إلى نموذج، ويتحقق أن البرنامج ليس فارغاً.
+  /// يحوّل الـ JSON الخام إلى نموذج، ويتحقق أن البرنامج مكتمل العناصر.
   static TrainingProgram _toProgram(
     Map<String, dynamic> raw,
     ProgramRequest request,
@@ -165,6 +152,4 @@ class AiProgramService {
     }
     return hash % AccentPalette.gradients.length;
   }
-
-  void dispose() => _http.close();
 }

@@ -143,127 +143,132 @@ class _NewProgramScreenState extends State<NewProgramScreen> {
         colors: AppColors.accentGradient(accent),
         child: SafeArea(
           bottom: false,
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              padding: const EdgeInsets.only(bottom: Space.xxl),
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              children: <Widget>[
-                const ScreenHeader(
-                  title: 'برنامج جديد',
-                  subtitle: 'أي رياضة تبي تتطوّر فيها؟',
-                  showBack: true,
-                  padding: EdgeInsets.fromLTRB(
-                    Space.sm,
-                    Space.sm,
-                    Space.screenInset,
-                    Space.xl,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: Space.screenInset,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      AppTextField(
-                        controller: _sportController,
-                        label: 'الرياضة',
-                        hint: 'كرة سلة، بادل، تسلّق صخور…',
-                        icon: Icons.search_rounded,
-                        textInputAction: TextInputAction.done,
-                        isRequired: true,
-                        helper: 'اكتب أي رياضة، حتى لو ما كانت في الاقتراحات.',
-                        validator: Validators.sport,
-                        suffix: _sport.isEmpty
-                            ? null
-                            : AppIconButton(
-                                icon: Icons.close_rounded,
-                                tooltip: 'مسح الرياضة',
-                                onPressed: _sportController.clear,
-                              ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: Space.contentWidth),
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  padding: const EdgeInsets.only(bottom: Space.xxl),
+                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                  children: <Widget>[
+                    const ScreenHeader(
+                      title: 'برنامج جديد',
+                      subtitle: 'أي رياضة تبي تتطوّر فيها؟',
+                      showBack: true,
+                      padding: EdgeInsets.fromLTRB(
+                        Space.sm,
+                        Space.sm,
+                        Space.screenInset,
+                        Space.xl,
                       ),
-                      const SizedBox(height: Space.lg),
-                      _SuggestionList(
-                        matches: matches,
-                        query: _sport,
-                        accent: accent,
-                        expanded: _showAllSports,
-                        visibleCount: _visibleSuggestions,
-                        onPick: (sport) {
-                          _sportController.text = sport;
-                          FocusScope.of(context).unfocus();
-                        },
-                        onExpand: () => setState(() => _showAllSports = true),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: Space.screenInset,
                       ),
-                      const SizedBox(height: Space.x3),
-                      const SectionHeader(
-                        title: 'المستوى',
-                        subtitle: 'يحدّد صعوبة التمارين وحجم التدريب',
-                      ),
-                      Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: <Widget>[
-                          for (var i = 0;
-                              i < FitnessLevel.values.length;
-                              i++) ...<Widget>[
-                            if (i > 0) const SizedBox(width: Space.sm),
-                            Expanded(
-                              child: _LevelPill(
-                                level: FitnessLevel.values[i],
-                                selected: _level == FitnessLevel.values[i],
-                                onTap: () => setState(() {
-                                  _level = FitnessLevel.values[i];
-                                  // المدّة والجلسات تعود لافتراضي المستوى
-                                  // الجديد ما لم يغيّرها المستخدم بنفسه.
-                                  _weeks = null;
-                                  _sessions = null;
-                                }),
-                              ),
-                            ),
-                          ],
+                          AppTextField(
+                            controller: _sportController,
+                            label: 'الرياضة',
+                            hint: 'كرة سلة، بادل، تسلّق صخور…',
+                            icon: Icons.search_rounded,
+                            textInputAction: TextInputAction.done,
+                            isRequired: true,
+                            helper: 'اكتب أي رياضة، حتى لو ما كانت في الاقتراحات.',
+                            validator: Validators.sport,
+                            suffix: _sport.isEmpty
+                                ? null
+                                : AppIconButton(
+                                    icon: Icons.close_rounded,
+                                    tooltip: 'مسح الرياضة',
+                                    onPressed: _sportController.clear,
+                                  ),
+                          ),
+                          const SizedBox(height: Space.lg),
+                          _SuggestionList(
+                            matches: matches,
+                            query: _sport,
+                            accent: accent,
+                            expanded: _showAllSports,
+                            visibleCount: _visibleSuggestions,
+                            onPick: (sport) {
+                              _sportController.text = sport;
+                              FocusScope.of(context).unfocus();
+                            },
+                            onExpand: () => setState(() => _showAllSports = true),
+                          ),
+                          const SizedBox(height: Space.x3),
+                          const SectionHeader(
+                            title: 'المستوى',
+                            subtitle: 'يحدّد صعوبة التمارين وحجم التدريب',
+                          ),
+                          Row(
+                            children: <Widget>[
+                              for (var i = 0;
+                                  i < FitnessLevel.values.length;
+                                  i++) ...<Widget>[
+                                if (i > 0) const SizedBox(width: Space.sm),
+                                Expanded(
+                                  child: _LevelPill(
+                                    level: FitnessLevel.values[i],
+                                    selected: _level == FitnessLevel.values[i],
+                                    onTap: () => setState(() {
+                                      _level = FitnessLevel.values[i];
+                                      // المدّة والجلسات تعود لافتراضي المستوى
+                                      // الجديد ما لم يغيّرها المستخدم بنفسه.
+                                      _weeks = null;
+                                      _sessions = null;
+                                    }),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: Space.md),
+                          // وصف المستوى المحدَّد وحده — الفرق بين الخيارات يُقرأ
+                          // عند الحاجة، لا كثلاث فقرات متجاورة.
+                          _LevelDescription(level: _level),
+                          const SizedBox(height: Space.xxl),
+                          const SectionHeader(
+                            title: 'الهدف',
+                            subtitle: 'يوجّه اختيار التمارين وترتيب الأولويات',
+                          ),
+                          Wrap(
+                            spacing: Space.sm,
+                            runSpacing: Space.sm,
+                            children: <Widget>[
+                              for (final goal in TrainingGoal.values)
+                                AppChip(
+                                  label: goal.label,
+                                  icon: goal.icon,
+                                  selected: _goal == goal,
+                                  color: accent,
+                                  onTap: () => setState(() => _goal = goal),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: Space.xxl),
+                          _AdvancedSection(
+                            expanded: _showAdvanced,
+                            onToggle: () =>
+                                setState(() => _showAdvanced = !_showAdvanced),
+                            level: _level,
+                            weeks: _effectiveWeeks,
+                            sessions: _effectiveSessions,
+                            onWeeks: (v) => setState(() => _weeks = v),
+                            onSessions: (v) => setState(() => _sessions = v),
+                            equipmentController: _equipmentController,
+                            notesController: _notesController,
+                          ),
                         ],
                       ),
-                      const SizedBox(height: Space.md),
-                      // وصف المستوى المحدَّد وحده — الفرق بين الخيارات يُقرأ
-                      // عند الحاجة، لا كثلاث فقرات متجاورة.
-                      _LevelDescription(level: _level),
-                      const SizedBox(height: Space.xxl),
-                      const SectionHeader(
-                        title: 'الهدف',
-                        subtitle: 'يوجّه اختيار التمارين وترتيب الأولويات',
-                      ),
-                      Wrap(
-                        spacing: Space.sm,
-                        runSpacing: Space.sm,
-                        children: <Widget>[
-                          for (final goal in TrainingGoal.values)
-                            AppChip(
-                              label: goal.label,
-                              icon: goal.icon,
-                              selected: _goal == goal,
-                              color: accent,
-                              onTap: () => setState(() => _goal = goal),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: Space.xxl),
-                      _AdvancedSection(
-                        expanded: _showAdvanced,
-                        onToggle: () =>
-                            setState(() => _showAdvanced = !_showAdvanced),
-                        level: _level,
-                        weeks: _effectiveWeeks,
-                        sessions: _effectiveSessions,
-                        onWeeks: (v) => setState(() => _weeks = v),
-                        onSessions: (v) => setState(() => _sessions = v),
-                        equipmentController: _equipmentController,
-                        notesController: _notesController,
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -338,6 +343,7 @@ class _SuggestionList extends StatelessWidget {
               for (final sport in visible)
                 AppChip(
                   label: sport,
+                  icon: SportVisuals.iconFor(sport),
                   selected: query == sport,
                   color: accent,
                   onTap: () => onPick(sport),
@@ -348,7 +354,7 @@ class _SuggestionList extends StatelessWidget {
                 // فتُقرأ «10+».
                 AppChip(
                   label: 'عرض $hidden أخرى',
-                  icon: Icons.expand_more_rounded,
+                  icon: Icons.keyboard_arrow_down_rounded,
                   selected: false,
                   color: accent,
                   onTap: onExpand,
@@ -375,20 +381,40 @@ class _LevelDescription extends StatelessWidget {
       alignment: Alignment.topCenter,
       child: AnimatedSwitcher(
         duration: Motion.base,
-        child: Row(
+        child: Container(
           key: ValueKey<FitnessLevel>(level),
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            const ExcludeSemantics(
-              child: Icon(
-                Icons.info_outline_rounded,
-                size: IconSizes.sm,
-                color: AppColors.textTertiary,
-              ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: Space.md,
+            vertical: Space.sm + 2,
+          ),
+          decoration: BoxDecoration(
+            color: level.color.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(Radii.md),
+            border: Border.all(
+              color: level.color.withValues(alpha: 0.22),
             ),
-            const SizedBox(width: Space.sm),
-            Expanded(child: Text(level.description, style: AppType.caption)),
-          ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              ExcludeSemantics(
+                child: Icon(
+                  Icons.info_outline_rounded,
+                  size: IconSizes.sm,
+                  color: level.color,
+                ),
+              ),
+              const SizedBox(width: Space.sm),
+              Expanded(
+                child: Text(
+                  level.description,
+                  style: AppType.caption.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -437,10 +463,21 @@ class _LevelPill extends StatelessWidget {
               ),
               child: Column(
                 children: <Widget>[
-                  Icon(
-                    level.icon,
-                    size: IconSizes.md,
-                    color: selected ? level.color : AppColors.textTertiary,
+                  Container(
+                    width: IconSizes.tile,
+                    height: IconSizes.tile,
+                    decoration: BoxDecoration(
+                      color: (selected ? level.color : AppColors.textTertiary)
+                          .withValues(alpha: 0.14),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Icon(
+                        level.icon,
+                        size: IconSizes.md - 2,
+                        color: selected ? level.color : AppColors.textTertiary,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: Space.sm),
                   Text(
@@ -610,6 +647,32 @@ class _AdvancedSection extends StatelessWidget {
                       label: 'الأدوات المتاحة',
                       hint: 'دمبلز، حبل مقاومة، بدون أدوات…',
                     ),
+                    const SizedBox(height: Space.sm),
+                    Wrap(
+                      spacing: Space.xs,
+                      runSpacing: Space.xs,
+                      children: <Widget>[
+                        for (final eq in const <String>[
+                          'بدون أدوات',
+                          'دمبلز',
+                          'حبل مقاومة',
+                          'نادي رياضي',
+                        ])
+                          AppChip(
+                            label: eq,
+                            selected: equipmentController.text.contains(eq),
+                            color: level.color,
+                            onTap: () {
+                              final cur = equipmentController.text.trim();
+                              if (cur.isEmpty) {
+                                equipmentController.text = eq;
+                              } else if (!cur.contains(eq)) {
+                                equipmentController.text = '$cur، $eq';
+                              }
+                            },
+                          ),
+                      ],
+                    ),
                     const SizedBox(height: Space.lg),
                     AppTextField(
                       controller: notesController,
@@ -617,6 +680,32 @@ class _AdvancedSection extends StatelessWidget {
                       hint: 'عندي ألم في الركبة، تجنّب القفز',
                       maxLines: 3,
                       helper: 'يأخذها المدرّب بالحسبان عند اختيار التمارين.',
+                    ),
+                    const SizedBox(height: Space.sm),
+                    Wrap(
+                      spacing: Space.xs,
+                      runSpacing: Space.xs,
+                      children: <Widget>[
+                        for (final note in const <String>[
+                          'تجنّب القفز',
+                          'ألم بالركبة',
+                          'ألم أسفل الظهر',
+                          'تمرين منزلي',
+                        ])
+                          AppChip(
+                            label: note,
+                            selected: notesController.text.contains(note),
+                            color: level.color,
+                            onTap: () {
+                              final cur = notesController.text.trim();
+                              if (cur.isEmpty) {
+                                notesController.text = note;
+                              } else if (!cur.contains(note)) {
+                                notesController.text = '$cur، $note';
+                              }
+                            },
+                          ),
+                      ],
                     ),
                   ],
                 ),
@@ -666,60 +755,77 @@ class _GenerateBar extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            Space.screenInset,
-            Space.md,
-            Space.screenInset,
-            Space.md,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Row(
+        child: Center(
+          heightFactor: 1.0,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: Space.contentWidth),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                Space.screenInset,
+                Space.md,
+                Space.screenInset,
+                Space.md,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  ExcludeSemantics(
-                    child: Icon(
-                      sport.isEmpty
-                          ? Icons.edit_outlined
-                          : Icons.check_circle_outline_rounded,
-                      size: IconSizes.sm,
-                      color: sport.isEmpty
-                          ? AppColors.textTertiary
-                          : AppColors.asText(level.color),
-                    ),
-                  ),
-                  const SizedBox(width: Space.sm),
-                  Expanded(
-                    child: Text(
-                      _summary,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppType.caption.copyWith(
-                        color: sport.isEmpty
-                            ? AppColors.textTertiary
-                            : AppColors.textSecondary,
+                  Row(
+                    children: <Widget>[
+                      ExcludeSemantics(
+                        child: Icon(
+                          sport.isEmpty
+                              ? Icons.edit_outlined
+                              : Icons.check_circle_outline_rounded,
+                          size: IconSizes.sm,
+                          color: sport.isEmpty
+                              ? AppColors.textTertiary
+                              : AppColors.asText(level.color),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: Space.sm),
+                      Expanded(
+                        child: Text(
+                          _summary,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppType.caption.copyWith(
+                            color: sport.isEmpty
+                                ? AppColors.textTertiary
+                                : AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: Space.md),
+                  AppButton.primary(
+                    label: 'ولّد برنامجي',
+                    icon: Icons.auto_awesome_rounded,
+                    isLoading: isBusy,
+                    gradient: AppColors.accentGradient(level.color),
+                    semanticLabel: 'ولّد برنامجي. $_summary',
+                    onPressed: isBusy ? null : onGenerate,
+                  ),
+                  const SizedBox(height: Space.sm),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      const Icon(
+                        Icons.timer_outlined,
+                        size: IconSizes.sm,
+                        color: AppColors.textTertiary,
+                      ),
+                      const SizedBox(width: Space.xs),
+                      Text(
+                        'التوليد يستغرق 20 إلى 60 ثانية',
+                        textAlign: TextAlign.center,
+                        style: AppType.caption,
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: Space.md),
-              AppButton.primary(
-                label: 'ولّد برنامجي',
-                icon: Icons.auto_awesome_rounded,
-                isLoading: isBusy,
-                gradient: AppColors.accentGradient(level.color),
-                semanticLabel: 'ولّد برنامجي. $_summary',
-                onPressed: isBusy ? null : onGenerate,
-              ),
-              const SizedBox(height: Space.sm),
-              Text(
-                'التوليد يستغرق ٢٠ إلى ٦٠ ثانية',
-                textAlign: TextAlign.center,
-                style: AppType.caption.copyWith(fontSize: 11),
-              ),
-            ],
+            ),
           ),
         ),
       ),

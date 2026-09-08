@@ -118,19 +118,19 @@ class CoachMintLogo extends StatelessWidget {
   const CoachMintLogo({
     super.key,
     this.markSize = 44,
-    this.fontSize = 30,
+    this.wordmarkSize = 30,
     this.coachColor,
     this.showMark = true,
   });
 
   final double markSize;
-  final double fontSize;
+  final double wordmarkSize;
   final Color? coachColor;
   final bool showMark;
 
   @override
   Widget build(BuildContext context) {
-    final wordStyle = AppType.brand(size: fontSize);
+    final wordStyle = AppType.brand(size: wordmarkSize);
 
     return Row(
       mainAxisSize: MainAxisSize.min,

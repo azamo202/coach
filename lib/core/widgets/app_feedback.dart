@@ -151,6 +151,7 @@ class AppNotice extends StatelessWidget {
     this.icon,
     this.title,
     this.onRetry,
+    this.onDismiss,
   });
 
   final String message;
@@ -158,6 +159,7 @@ class AppNotice extends StatelessWidget {
   final IconData? icon;
   final String? title;
   final VoidCallback? onRetry;
+  final VoidCallback? onDismiss;
 
   Color get _accent => switch (tone) {
         NoticeTone.neutral => AppColors.textTertiary,
@@ -210,6 +212,22 @@ class AppNotice extends StatelessWidget {
             if (onRetry != null) ...<Widget>[
               const SizedBox(width: Space.sm),
               TextButton(onPressed: onRetry, child: const Text('إعادة')),
+            ],
+            if (onDismiss != null) ...<Widget>[
+              const SizedBox(width: Space.xs),
+              IconButton(
+                icon: const Icon(Icons.close_rounded),
+                iconSize: IconSizes.sm + 2,
+                tooltip: 'إغلاق',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                style: IconButton.styleFrom(
+                  foregroundColor: _accent.withValues(alpha: 0.85),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  padding: EdgeInsets.zero,
+                ),
+                onPressed: onDismiss,
+              ),
             ],
           ],
         ),

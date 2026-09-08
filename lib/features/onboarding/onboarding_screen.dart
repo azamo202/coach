@@ -83,8 +83,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       title: 'تدرّج أسبوعي واضح',
       body: 'كل أسبوع أصعب من الذي قبله، مع عدد المجموعات والتكرارات وطريقة '
           'أداء كل تمرين خطوة بخطوة.',
-      proofLabel: 'أربعة أسابيع يرتفع حِملها بالترتيب: ٣×٨ ثم ٣×١٠ ثم ٤×١٠ '
-          'ثم ٤×١٢.',
+      proofLabel: 'أربعة أسابيع يرتفع حِملها بالترتيب: 3×8 ثم 3×10 ثم 4×10 '
+          'ثم 4×12.',
       colors: AccentPalette.spring,
     ),
     _Slide(
@@ -92,7 +92,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       title: 'تتبّع تلقائي لتقدّمك',
       body: 'علّم جلساتك المكتملة وشوف نسبة إنجازك تكبر. واربط التطبيق ببيانات '
           'صحتك ليأخذ نشاطك اليومي بالحسبان.',
-      proofLabel: 'حلقة إنجاز عند ٦٨٪، مع ١٢ جلسة مكتملة و٥ أيام متتالية.',
+      proofLabel: 'حلقة إنجاز عند 68٪، مع 12 جلسة مكتملة و5 أيام متتالية.',
       colors: AccentPalette.aqua,
     ),
   ];
@@ -247,7 +247,7 @@ class _TopBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(Space.xl, Space.sm, Space.sm, 0),
       child: Row(
         children: <Widget>[
-          const CoachMintLogo(markSize: 26, fontSize: 17),
+          const CoachMintLogo(markSize: 26, wordmarkSize: 17),
           const Spacer(),
           TextButton(onPressed: onSkip, child: const Text('تخطّي')),
         ],
@@ -300,7 +300,12 @@ class _SlideView extends StatelessWidget {
                   // الإحساس بالعمق أثناء التمرير.
                   SizedBox(
                     height: proofBox,
-                    child: Center(
+                    // الرسم يجلس على قاع صندوقه لا في منتصفه: ارتفاع البطاقة
+                    // يختلف بين الشرائح، والتمركز كان يحوّل الفرق إلى فجوة
+                    // متغيّرة بين الرسم وعنوانه — أسوأ موضع ممكن للفراغ.
+                    // الفرق الآن يقع فوق الرسم حيث يُقرأ متنفّساً تحت الشعار.
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
                       child: Opacity(
                         opacity: fade,
                         child: Transform.translate(

@@ -121,7 +121,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         child: SafeArea(
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
+              constraints: const BoxConstraints(maxWidth: Space.formWidth),
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(
                   Space.screenInset,
@@ -256,10 +256,28 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   : Padding(
                                       padding:
                                           const EdgeInsets.only(top: Space.sm),
-                                      child: _PasswordMatchBadge(
-                                        matches: _passwordController.text ==
-                                            _confirmController.text,
-                                      ),
+                                      child: _passwordController.text ==
+                                              _confirmController.text
+                                          ? const _PasswordMatchBadge()
+                                          : Row(
+                                              children: <Widget>[
+                                                const Icon(
+                                                  Icons.error_outline_rounded,
+                                                  size: 14,
+                                                  color: AppColors.coral,
+                                                ),
+                                                const SizedBox(width: Space.xs),
+                                                Expanded(
+                                                  child: Text(
+                                                    'كلمتا المرور غير متطابقتين',
+                                                    style: AppType.caption
+                                                        .copyWith(
+                                                      color: AppColors.coral,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                     ),
                             ),
                             const SizedBox(height: Space.xl),
@@ -283,7 +301,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   : Padding(
                                       padding:
                                           const EdgeInsets.only(top: Space.md),
-                                      child: AppNotice(message: auth.error!),
+                                      child: AppNotice(
+                                        message: auth.error!,
+                                        onDismiss: auth.clearError,
+                                      ),
                                     ),
                             ),
                             const SizedBox(height: Space.xl),
@@ -456,31 +477,27 @@ class _PasswordStrengthMeter extends StatelessWidget {
   }
 }
 
-/// شارة مطابقة كلمتي المرور — أيقونة ونصّ، لا لون وحده.
+/// شارة تأكيد تطابق كلمتي المرور — تظهر بالأخضر فقط عند التطابق لتجنب تكرار رسالة الخطأ.
 class _PasswordMatchBadge extends StatelessWidget {
-  const _PasswordMatchBadge({required this.matches});
-
-  final bool matches;
+  const _PasswordMatchBadge();
 
   @override
   Widget build(BuildContext context) {
-    final color = matches ? AppColors.mint : AppColors.danger;
-
     return Row(
       children: <Widget>[
-        ExcludeSemantics(
+        const ExcludeSemantics(
           child: Icon(
-            matches ? Icons.check_circle_rounded : Icons.error_outline_rounded,
+            Icons.check_circle_rounded,
             size: IconSizes.sm,
-            color: color,
+            color: AppColors.mint,
           ),
         ),
         const SizedBox(width: Space.xs),
         Flexible(
           child: Text(
-            matches ? 'كلمتا المرور متطابقتان' : 'كلمتا المرور غير متطابقتين',
+            'كلمتا المرور متطابقتان',
             style: AppType.caption.copyWith(
-              color: AppColors.asText(color),
+              color: AppColors.asText(AppColors.mint),
               fontWeight: AppType.medium,
             ),
           ),

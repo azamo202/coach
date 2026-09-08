@@ -33,18 +33,14 @@ Future<void> main() async {
 
   final store = await LocalStore.instance();
 
-  // في الوضع المحلي لا ننشئ عميل شبكة للباك إند إطلاقاً.
-  final ApiClient? api =
-      AppConfig.isOfflineMode ? null : ApiClient(baseUrl: AppConfig.apiBaseUrl);
+  final ApiClient api = ApiClient(baseUrl: AppConfig.apiBaseUrl);
 
   final localPrograms = LocalProgramRepository(store);
 
-  final AuthRepository authRepository = api == null
-      ? LocalAuthRepository(store)
-      : RemoteAuthRepository(api, store);
+  final AuthRepository authRepository = RemoteAuthRepository(api, store);
 
   final ProgramRepository programRepository =
-      api == null ? localPrograms : RemoteProgramRepository(api, localPrograms);
+      RemoteProgramRepository(api, localPrograms);
 
   final aiService = AiProgramService(api: api);
 
@@ -52,6 +48,8 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         Provider<LocalStore>.value(value: store),
+        Provider<ApiClient>.value(value: api),
+        Provider<AiProgramService>.value(value: aiService),
         ChangeNotifierProvider<AuthController>(
           create: (_) => AuthController(
             repository: authRepository,

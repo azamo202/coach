@@ -57,7 +57,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         child: SafeArea(
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
+              constraints: const BoxConstraints(maxWidth: Space.formWidth),
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(
                   Space.screenInset,
@@ -146,7 +146,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ? const SizedBox(width: double.infinity)
                 : Padding(
                     padding: const EdgeInsets.only(top: Space.md),
-                    child: AppNotice(message: auth.error!),
+                    child: AppNotice(
+                      message: auth.error!,
+                      onDismiss: auth.clearError,
+                    ),
                   ),
           ),
           const SizedBox(height: Space.xl),

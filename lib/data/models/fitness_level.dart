@@ -37,7 +37,7 @@ enum FitnessLevel {
       case FitnessLevel.beginner:
         return 'جديد على الرياضة أو راجع بعد انقطاع طويل';
       case FitnessLevel.intermediate:
-        return 'أتمرّن بانتظام من ٦ أشهر إلى سنتين';
+        return 'أتمرّن بانتظام من 6 أشهر إلى سنتين';
       case FitnessLevel.advanced:
         return 'خبرة تدريب طويلة وأبحث عن أداء تنافسي';
     }

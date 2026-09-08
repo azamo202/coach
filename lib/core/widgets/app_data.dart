@@ -18,6 +18,7 @@ class SportMark extends StatelessWidget {
     required this.sport,
     required this.colors,
     this.size = 48,
+    this.showIcon = true,
   });
 
   /// مقاسات الشارة. أربعة مقاسات تغطّي كل مواضعها في التطبيق.
@@ -29,6 +30,7 @@ class SportMark extends StatelessWidget {
   final String sport;
   final List<Color> colors;
   final double size;
+  final bool showIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -45,15 +47,21 @@ class SportMark extends StatelessWidget {
           borderRadius: BorderRadius.circular(size * 0.30),
         ),
         child: Center(
-          child: Text(
-            SportVisuals.initialFor(sport),
-            textAlign: TextAlign.center,
-            style: AppType.h1.copyWith(
-              fontSize: size * 0.42,
-              height: 1,
-              color: AppColors.onPrimary,
-            ),
-          ),
+          child: showIcon
+              ? Icon(
+                  SportVisuals.iconFor(sport),
+                  size: size * 0.54,
+                  color: AppColors.onPrimary,
+                )
+              : Text(
+                  SportVisuals.initialFor(sport),
+                  textAlign: TextAlign.center,
+                  style: AppType.h1.copyWith(
+                    fontSize: size * 0.42,
+                    height: 1,
+                    color: AppColors.onPrimary,
+                  ),
+                ),
         ),
       ),
     );

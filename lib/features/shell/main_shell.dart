@@ -200,31 +200,44 @@ class _BottomBar extends StatelessWidget {
         top: false,
         child: SizedBox(
           height: Touch.min + Space.lg,
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                  child: _Tab(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 680),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child: _Tab(
                       item: _items[0],
                       selected: index == 0,
-                      onTap: () => onSelect(0),),),
-              Expanded(
-                  child: _Tab(
+                      onTap: () => onSelect(0),
+                    ),
+                  ),
+                  Expanded(
+                    child: _Tab(
                       item: _items[1],
                       selected: index == 1,
-                      onTap: () => onSelect(1),),),
-              // فراغ زرّ الإنشاء العائم.
-              const SizedBox(width: 72),
-              Expanded(
-                  child: _Tab(
+                      onTap: () => onSelect(1),
+                    ),
+                  ),
+                  // فراغ زرّ الإنشاء العائم.
+                  const SizedBox(width: 72),
+                  Expanded(
+                    child: _Tab(
                       item: _items[2],
                       selected: index == 2,
-                      onTap: () => onSelect(2),),),
-              Expanded(
-                  child: _Tab(
+                      onTap: () => onSelect(2),
+                    ),
+                  ),
+                  Expanded(
+                    child: _Tab(
                       item: _items[3],
                       selected: index == 3,
-                      onTap: () => onSelect(3),),),
-            ],
+                      onTap: () => onSelect(3),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

@@ -5,6 +5,7 @@ import '../../core/config/app_config.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/utils/ar_plural.dart';
 import '../../core/widgets/app_widgets.dart';
 import '../../data/models/fitness_level.dart';
 import '../../data/models/program_progress.dart';
@@ -80,15 +81,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
           bottom: false,
           child: Column(
             children: <Widget>[
-              ScreenHeader(
-                title: 'برامجي',
-                subtitle: '${library.entries.length} من '
-                    '${AppConfig.maxSavedSports} رياضة محفوظة',
-                padding: const EdgeInsets.fromLTRB(
-                  Space.screenInset,
-                  Space.sm,
-                  Space.screenInset,
-                  Space.lg,
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: Space.gridWidth),
+                  child: ScreenHeader(
+                    title: 'برامجي',
+                    subtitle: '${Ar.outOf(library.entries.length, AppConfig.maxSavedSports, Ar.sport)}'
+                        ' محفوظة',
+                    padding: const EdgeInsets.fromLTRB(
+                      Space.screenInset,
+                      Space.sm,
+                      Space.screenInset,
+                      Space.lg,
+                    ),
+                  ),
                 ),
               ),
               if (library.entries.isNotEmpty)
@@ -152,53 +158,94 @@ class _LibraryScreenState extends State<LibraryScreen> {
       );
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(
-        Space.screenInset,
-        Space.sm,
-        Space.screenInset,
-        Space.bottomBarClearance,
-      ),
-      itemCount: entries.length,
-      separatorBuilder: (_, __) => const SizedBox(height: Space.md),
-      itemBuilder: (context, index) {
-        final entry = entries[index];
-        return Dismissible(
-          key: ValueKey<String>(entry.id),
-          direction: DismissDirection.endToStart,
-          // السحب اختصار لا غير: نفس الحذف متاح من قائمة «⋯» داخل البرنامج،
-          // حتى لا يبقى الإجراء حكراً على من يستطيع السحب.
-          confirmDismiss: (_) async {
-            await _confirmDelete(entry);
-            return false;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final isWide = width >= 650;
+        final isExtraWide = width >= 1050;
+        final crossAxisCount = isExtraWide ? 3 : (isWide ? 2 : 1);
+
+        if (crossAxisCount > 1) {
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: Space.gridWidth),
+              child: GridView.builder(
+                padding: const EdgeInsets.fromLTRB(
+                  Space.screenInset,
+                  Space.sm,
+                  Space.screenInset,
+                  Space.bottomBarClearance,
+                ),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: Space.md,
+                  mainAxisSpacing: Space.md,
+                  mainAxisExtent: 140,
+                ),
+                itemCount: entries.length,
+                itemBuilder: (context, index) {
+                  final entry = entries[index];
+                  return ProgramListTile(
+                    entry: entry,
+                    onTap: () => context.pushPage(
+                      ProgramScreen(programId: entry.id),
+                    ),
+                  );
+                },
+              ),
+            ),
+          );
+        }
+
+        return ListView.separated(
+          padding: const EdgeInsets.fromLTRB(
+            Space.screenInset,
+            Space.sm,
+            Space.screenInset,
+            Space.bottomBarClearance,
+          ),
+          itemCount: entries.length,
+          separatorBuilder: (_, __) => const SizedBox(height: Space.md),
+          itemBuilder: (context, index) {
+            final entry = entries[index];
+            return Dismissible(
+              key: ValueKey<String>(entry.id),
+              direction: DismissDirection.endToStart,
+              confirmDismiss: (_) async {
+                await _confirmDelete(entry);
+                return false;
+              },
+              background: Container(
+                alignment: AlignmentDirectional.centerStart,
+                padding: const EdgeInsetsDirectional.only(start: Space.xxl),
+                decoration: BoxDecoration(
+                  color: AppColors.danger.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(Radii.lg),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const Icon(
+                      Icons.delete_outline_rounded,
+                      color: AppColors.danger,
+                      size: IconSizes.md,
+                    ),
+                    const SizedBox(width: Space.sm),
+                    Text(
+                      'حذف',
+                      style: AppType.label.copyWith(color: AppColors.danger),
+                    ),
+                  ],
+                ),
+              ),
+              child: ProgramListTile(
+                entry: entry,
+                onTap: () => context.pushPage(
+                  ProgramScreen(programId: entry.id),
+                ),
+              ),
+            );
           },
-          background: Container(
-            alignment: AlignmentDirectional.centerStart,
-            padding: const EdgeInsetsDirectional.only(start: Space.xxl),
-            decoration: BoxDecoration(
-              color: AppColors.danger.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(Radii.lg),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                const Icon(
-                  Icons.delete_outline_rounded,
-                  color: AppColors.danger,
-                  size: IconSizes.md,
-                ),
-                const SizedBox(width: Space.sm),
-                Text(
-                  'حذف',
-                  style: AppType.label.copyWith(color: AppColors.danger),
-                ),
-              ],
-            ),
-          ),
-          child: ProgramListTile(
-            entry: entry,
-            onTap: () => context.pushPage(ProgramScreen(programId: entry.id)),
-          ),
         );
       },
     );
@@ -206,6 +253,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
 }
 
 /// مجموعتا فلترة مستقلّتان، كل واحدة أحادية الاختيار.
+///
+/// الشرائح تلتفّ إلى سطر ثانٍ ولا تنزلق أفقياً. الشريط المنزلق كان يقصّ
+/// «مبتدئ» عند حافة الشاشة ويخفي «متوسط» و«محترف» خلفها بلا أي إشارة إلى
+/// وجودهما — فلتر لا يراه أحد ليس فلتراً.
 class _FilterBar extends StatelessWidget {
   const _FilterBar({
     required this.status,
@@ -222,49 +273,77 @@ class _FilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: Space.lg),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: Space.screenInset),
-        child: Row(
-          children: <Widget>[
-            for (final value in _Status.values) ...<Widget>[
-              AppChip(
-                label: value.label,
-                selected: status == value,
-                onTap: () => onStatus(value),
+      padding: const EdgeInsets.fromLTRB(
+        Space.screenInset,
+        0,
+        Space.screenInset,
+        Space.lg,
+      ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: Space.gridWidth),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              _FilterGroup(
+                label: 'الحالة',
+                children: <Widget>[
+                  for (final value in _Status.values)
+                    AppChip(
+                      label: value.label,
+                      selected: status == value,
+                      onTap: () => onStatus(value),
+                    ),
+                ],
               ),
-              const SizedBox(width: Space.sm),
-            ],
-            const _FilterDivider(),
-            for (final value in FitnessLevel.values) ...<Widget>[
-              AppChip(
-                label: value.label,
-                icon: value.icon,
-                color: value.color,
-                selected: level == value,
-                onTap: () => onLevel(level == value ? null : value),
+              const SizedBox(height: Space.md),
+              _FilterGroup(
+                label: 'المستوى',
+                children: <Widget>[
+                  for (final value in FitnessLevel.values)
+                    AppChip(
+                      label: value.label,
+                      icon: value.icon,
+                      color: value.color,
+                      selected: level == value,
+                      onTap: () => onLevel(level == value ? null : value),
+                    ),
+                ],
               ),
-              const SizedBox(width: Space.sm),
             ],
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-/// فاصل رفيع يوضّح أن ما بعده مجموعة فلترة أخرى.
-class _FilterDivider extends StatelessWidget {
-  const _FilterDivider();
+/// مجموعة شرائح تحت اسمها.
+///
+/// الاسم يقول ما الذي تفلتره المجموعة — بدونه تبدو الشرائح الستّ صفّاً
+/// واحداً يلغي بعضه بعضاً.
+class _FilterGroup extends StatelessWidget {
+  const _FilterGroup({required this.label, required this.children});
+
+  final String label;
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 1,
-      height: IconSizes.lg,
-      margin: const EdgeInsets.only(left: Space.md, right: Space.xs),
-      color: AppColors.border,
+    // الاسم فوق الشرائح لا بجانبها: عمود الاسم كان يقتطع 60 بكسل من عرض
+    // الصفّ، فتهبط شريحة «محترف» وحدها إلى سطر ثانٍ — والنتيجة أطول مما لو
+    // أخذ الاسم سطره الخاصّ.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(label, style: AppType.overline),
+        const SizedBox(height: Space.sm),
+        Wrap(
+          spacing: Space.sm,
+          runSpacing: Space.sm,
+          children: children,
+        ),
+      ],
     );
   }
 }

@@ -65,7 +65,7 @@ class AppChip extends StatelessWidget {
                     child: Icon(
                       icon,
                       size: IconSizes.sm,
-                      color: selected ? accent : AppColors.textTertiary,
+                      color: selected ? accent : AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(width: Space.sm),
@@ -137,18 +137,68 @@ class AppTag extends StatelessWidget {
             ),
             const SizedBox(width: Space.xs + 2),
           ],
-          Text(
-            label,
-            style: AppType.caption.copyWith(
-              // النصّ الصغير يحتاج درجة أفتح قليلاً من درجة الأيقونة.
-              color: color == null
-                  ? AppColors.textSecondary
-                  : AppColors.asText(accent),
-              fontWeight: AppType.semiBold,
+          // النصّ ينكمش قبل أن يفيض: الشارة تعيش في صفوف ضيقة (رأس الشاشة،
+          // صفّ بطاقة)، ونصّها يطول مع تكبير الخط في الجهاز.
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppType.caption.copyWith(
+                // النصّ الصغير يحتاج درجة أفتح قليلاً من درجة الأيقونة.
+                color: color == null
+                    ? AppColors.textSecondary
+                    : AppColors.asText(accent),
+                fontWeight: AppType.semiBold,
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+/// شارة نسبة الإنجاز — الرقم وهو يتحرّك نحو كلمة «مكتمل».
+///
+/// كانت مكرّرة يدوياً في ثلاثة مواضع (بطاقة البرنامج، لوحة التقدّم، صفّ
+/// الرياضة)، فاختلفت بينها الحشوة وحجم الرقم وشدّة الحدّ. الشارة الواحدة
+/// تُبقي أهم رقم في التطبيق بشكل واحد أينما ظهر.
+class CompletionBadge extends StatelessWidget {
+  const CompletionBadge({
+    super.key,
+    required this.percent,
+    required this.complete,
+    required this.accent,
+  });
+
+  final int percent;
+
+  /// اكتمل البرنامج: تحلّ الكلمة محلّ الرقم لأن ١٠٠٪ خبر لا قياس.
+  final bool complete;
+
+  /// لون الرياضة. عند الاكتمال يُستبدل بنعناع العلامة مهما كان لون الرياضة.
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = complete ? AppColors.mint : accent;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: Space.md,
+        vertical: Space.xs,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: complete ? 0.14 : 0.10),
+        borderRadius: BorderRadius.circular(Radii.pill),
+        border: Border.all(
+          color: color.withValues(alpha: complete ? 0.35 : 0.25),
+        ),
+      ),
+      child: complete
+          ? Text('مكتمل', style: AppType.label.copyWith(color: color))
+          : Text('$percent٪', style: AppType.number(size: 14, color: color)),
     );
   }
 }
@@ -177,8 +227,10 @@ class AppMetricPill extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Text(value, style: AppType.number(size: 13)),
-          const SizedBox(width: Space.xs + 2),
-          Text(unit, style: AppType.caption),
+          if (unit.isNotEmpty) ...<Widget>[
+            const SizedBox(width: Space.xs + 2),
+            Text(unit, style: AppType.caption),
+          ],
         ],
       ),
     );

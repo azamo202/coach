@@ -1,14 +1,11 @@
-import 'dart:io';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/config/app_config.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/utils/ar_plural.dart';
 import '../../core/widgets/app_widgets.dart';
 import '../../routing/app_router.dart';
 import '../../state/auth_controller.dart';
@@ -24,15 +21,6 @@ import 'edit_profile_screen.dart';
 /// وأخيراً إجراءات الحساب — وحذف الحساب في آخر السطر لا في وسط القائمة.
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
-
-  Future<void> _openUrl(BuildContext context, String url) async {
-    final uri = Uri.tryParse(url);
-    if (uri == null) return;
-    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!ok && context.mounted) {
-      showAppSnack(context, 'ما قدرنا نفتح الرابط', isError: true);
-    }
-  }
 
   Future<void> _signOut(BuildContext context) async {
     final auth = context.read<AuthController>();
@@ -88,36 +76,10 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _toggleHealth(BuildContext context, bool enable) async {
-    final auth = context.read<AuthController>();
-    final health = context.read<HealthController>();
-
-    if (!enable) {
-      await health.disconnect();
-      await auth.setHealthSync(enabled: false);
-      return;
-    }
-
-    final connected = await health.connect();
-    if (!context.mounted) return;
-
-    if (connected) {
-      await auth.setHealthSync(enabled: true);
-      if (!context.mounted) return;
-      showAppSnack(context, 'تم ربط بيانات صحتك');
-    } else if (!health.isAvailable && !kIsWeb && Platform.isAndroid) {
-      showAppSnack(context, 'تحتاج تثبيت Health Connect أولاً', isError: true);
-      await health.openHealthConnectInstall();
-    } else {
-      showAppSnack(context, 'ما حصلنا على الصلاحية', isError: true);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthController>();
     final library = context.watch<LibraryController>();
-    final health = context.watch<HealthController>();
     final user = auth.user;
 
     if (user == null) {
@@ -126,134 +88,166 @@ class ProfileScreen extends StatelessWidget {
       );
     }
 
-    final isApple = !kIsWeb && Platform.isIOS;
-
     return Scaffold(
       body: BrandBackdrop(
         child: SafeArea(
           bottom: false,
-          child: ListView(
-            padding: const EdgeInsets.only(bottom: Space.bottomBarClearance),
-            children: <Widget>[
-              ScreenHeader(
-                title: user.name,
-                subtitle: user.email,
-                leading: AppAvatar(initials: user.initials, size: 52),
-                trailing: AppIconButton(
-                  icon: Icons.edit_outlined,
-                  tooltip: 'تعديل البيانات',
-                  onPressed: () => context.pushPage(const EditProfileScreen()),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Space.screenInset,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    StatRow(
-                      tiles: <StatTile>[
-                        StatTile(
-                          value: '${library.entries.length}',
-                          label: 'رياضة',
-                          icon: Icons.sports_score_rounded,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: Space.contentWidth),
+              child: ListView(
+                padding: const EdgeInsets.only(bottom: Space.bottomBarClearance),
+                children: <Widget>[
+                  ScreenHeader(
+                    title: user.name,
+                    subtitle: user.email,
+                    leading: AppAvatar(initials: user.initials, size: 52),
+                    trailing: AppIconButton(
+                      icon: Icons.edit_outlined,
+                      tooltip: 'تعديل البيانات',
+                      onPressed: () => context.pushPage(const EditProfileScreen()),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Space.screenInset,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        StatRow(
+                          tiles: <StatTile>[
+                            StatTile(
+                              value: '${library.entries.length}',
+                              label: Ar.sport.unit(library.entries.length),
+                              icon: Icons.sports_score_rounded,
+                            ),
+                            StatTile(
+                              value: '${library.totalCompletedSessions}',
+                              label: Ar.session
+                                  .unit(library.totalCompletedSessions),
+                              icon: Icons.check_circle_outline_rounded,
+                            ),
+                            StatTile(
+                              value: user.level.label,
+                              label: 'المستوى',
+                              icon: user.level.icon,
+                              isNumeric: false,
+                            ),
+                          ],
                         ),
-                        StatTile(
-                          value: '${library.totalCompletedSessions}',
-                          label: 'جلسة',
-                          icon: Icons.check_circle_outline_rounded,
-                        ),
-                        StatTile(
-                          value: user.level.label,
-                          label: 'المستوى',
+                        const SizedBox(height: Space.x3),
+                        const SectionHeader(title: 'التدريب'),
+                        _Tile(
                           icon: user.level.icon,
-                          isNumeric: false,
+                          title: 'مستواي وهدفي',
+                          subtitle: '${user.level.label} · ${user.goal.label}',
+                          onTap: () => context.pushPage(
+                            const LevelSetupScreen(isEditing: true),
+                          ),
+                        ),
+                        _HealthSyncTile(enabled: user.healthSyncEnabled),
+                        const SizedBox(height: Space.xxl),
+                        const SectionHeader(title: 'الحساب'),
+                        _Tile(
+                          icon: Icons.logout_rounded,
+                          title: 'تسجيل الخروج',
+                          onTap: () => _signOut(context),
+                        ),
+                        const SizedBox(height: Space.xxl),
+                        // الحذف النهائي معزول عن بقية القائمة، لا صفّاً بينها.
+                        _Tile(
+                          icon: Icons.delete_forever_outlined,
+                          accent: AppColors.danger,
+                          title: 'حذف الحساب',
+                          subtitle: 'يمسح كل بياناتك نهائياً',
+                          onTap: () => _deleteAccount(context),
+                        ),
+                        const SizedBox(height: Space.xxl),
+                        Center(
+                          child: Text(
+                            '${AppConfig.appName} · الإصدار 1.0.0',
+                            style: AppType.caption,
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: Space.x3),
-                    const SectionHeader(title: 'التدريب'),
-                    _Tile(
-                      icon: user.level.icon,
-                      title: 'مستواي وهدفي',
-                      subtitle: '${user.level.label} · ${user.goal.label}',
-                      onTap: () => context.pushPage(
-                        const LevelSetupScreen(isEditing: true),
-                      ),
-                    ),
-                    _Tile(
-                      icon: Icons.favorite_outline_rounded,
-                      title: isApple ? 'ربط تطبيق الصحة' : 'ربط Health Connect',
-                      subtitle: _healthStatus(
-                        enabled: user.healthSyncEnabled,
-                        connected: health.isConnected,
-                      ),
-                      trailing: Switch.adaptive(
-                        value: user.healthSyncEnabled,
-                        onChanged: health.isBusy
-                            ? null
-                            : (value) => _toggleHealth(context, value),
-                      ),
-                    ),
-                    const SizedBox(height: Space.xxl),
-                    const SectionHeader(title: 'عن التطبيق'),
-                    _Tile(
-                      icon: Icons.privacy_tip_outlined,
-                      title: 'سياسة الخصوصية',
-                      onTap: () =>
-                          _openUrl(context, AppConfig.privacyPolicyUrl),
-                    ),
-                    _Tile(
-                      icon: Icons.description_outlined,
-                      title: 'شروط الاستخدام',
-                      onTap: () => _openUrl(context, AppConfig.termsUrl),
-                    ),
-                    _Tile(
-                      icon: Icons.mail_outline_rounded,
-                      title: 'الدعم الفني',
-                      subtitle: AppConfig.supportEmail,
-                      onTap: () => _openUrl(
-                        context,
-                        'mailto:${AppConfig.supportEmail}',
-                      ),
-                    ),
-                    const SizedBox(height: Space.xxl),
-                    const SectionHeader(title: 'الحساب'),
-                    _Tile(
-                      icon: Icons.logout_rounded,
-                      title: 'تسجيل الخروج',
-                      onTap: () => _signOut(context),
-                    ),
-                    const SizedBox(height: Space.xxl),
-                    // الحذف النهائي معزول عن بقية القائمة، لا صفّاً بينها.
-                    _Tile(
-                      icon: Icons.delete_forever_outlined,
-                      accent: AppColors.danger,
-                      title: 'حذف الحساب',
-                      subtitle: 'يمسح كل بياناتك نهائياً',
-                      onTap: () => _deleteAccount(context),
-                    ),
-                    const SizedBox(height: Space.xxl),
-                    Center(
-                      child: Text(
-                        '${AppConfig.appName} · الإصدار 1.0.0',
-                        style: AppType.caption,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  String _healthStatus({required bool enabled, required bool connected}) {
-    if (!enabled) return 'غير مفعّل';
-    return connected ? 'مفعّل — نقرأ خطواتك ونشاطك' : 'مفعّل، والصلاحية ناقصة';
+}
+
+/// ربط بيانات الصحة.
+///
+/// كان هذا الصفّ غائباً عن الواجهة كلها: [HealthController] مكتمل، وبطاقة
+/// «نشاطك» في الرئيسية تحيل المستخدم إلى «حسابي ← ربط الصحة» — إلى صفّ لا
+/// وجود له، فتبقى الميزة معطّلة بلا طريق إليها.
+class _HealthSyncTile extends StatelessWidget {
+  const _HealthSyncTile({required this.enabled});
+
+  final bool enabled;
+
+  Future<void> _toggle(BuildContext context, {required bool value}) async {
+    final auth = context.read<AuthController>();
+    final health = context.read<HealthController>();
+    final messenger = ScaffoldMessenger.of(context);
+
+    if (!value) {
+      await health.disconnect();
+      await auth.setHealthSync(enabled: false);
+      return;
+    }
+
+    // الصلاحية تُطلب أولاً: لا معنى لتشغيل المزامنة قبل موافقة النظام.
+    final granted = await health.connect();
+    await auth.setHealthSync(enabled: granted);
+    if (granted) return;
+
+    // الرسالة تقول ما الذي منع الربط وأين يُصلَح، لا «تعذّر» وحدها.
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            health.isAvailable
+                ? 'ما وصلتنا صلاحية القراءة. افتح تطبيق الصحة على جهازك '
+                    'واسمح لـCoachMint بقراءة نشاطك.'
+                : 'خدمة الصحة غير متاحة على هذا الجهاز.',
+          ),
+        ),
+      );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final health = context.watch<HealthController>();
+
+    return _Tile(
+      icon: Icons.favorite_border_rounded,
+      title: 'ربط بيانات الصحة',
+      subtitle: enabled
+          ? 'يقرأ المدرّب خطواتك ودقائق تمرينك ليضبط الحمل'
+          : 'اربطه ليأخذ نشاطك اليومي بالحسبان',
+      trailing: health.isBusy
+          ? const SizedBox(
+              width: IconSizes.md,
+              height: IconSizes.md,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Switch(
+              value: enabled,
+              onChanged: (value) => _toggle(context, value: value),
+            ),
+      onTap: health.isBusy ? null : () => _toggle(context, value: !enabled),
+      toggled: enabled,
+    );
   }
 }
 
@@ -264,22 +258,28 @@ class _Tile extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.onTap,
-    this.trailing,
     this.accent,
+    this.trailing,
+    this.toggled,
   });
 
   final IconData icon;
   final String title;
   final String? subtitle;
   final VoidCallback? onTap;
-  final Widget? trailing;
 
   /// لون دلالي للأيقونة والعنوان — للإجراءات المتلفة فقط.
   final Color? accent;
 
+  /// عنصر في طرف الصفّ يحلّ محلّ سهم الانتقال — مفتاح أو مؤشّر انتظار.
+  final Widget? trailing;
+
+  /// حالة المفتاح إن كان الصفّ مفتاحاً — تُعلَن للقارئ الصوتي.
+  final bool? toggled;
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    final row = Padding(
       padding: const EdgeInsets.only(bottom: Space.sm),
       child: AppCard(
         onTap: onTap,
@@ -291,8 +291,8 @@ class _Tile extends StatelessWidget {
         child: Row(
           children: <Widget>[
             Container(
-              width: IconSizes.lg + Space.md,
-              height: IconSizes.lg + Space.md,
+              width: IconSizes.tile,
+              height: IconSizes.tile,
               decoration: BoxDecoration(
                 color:
                     (accent ?? AppColors.textSecondary).withValues(alpha: 0.12),
@@ -325,20 +325,30 @@ class _Tile extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: Space.sm),
-            trailing ??
-                (onTap == null
-                    ? const SizedBox.shrink()
-                    : const Icon(
-                        // يتبع اتجاه القراءة تلقائياً: يشير يساراً في
-                        // الواجهة العربية ويميناً في الإنجليزية.
-                        Icons.chevron_right_rounded,
-                        size: IconSizes.md,
-                        color: AppColors.textTertiary,
-                      )),
+            if (trailing != null) ...<Widget>[
+              const SizedBox(width: Space.sm),
+              // المفتاح يُعلَن مرة واحدة على مستوى الصفّ كاملاً.
+              ExcludeSemantics(child: trailing!),
+            ] else if (onTap != null) ...<Widget>[
+              const SizedBox(width: Space.sm),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: IconSizes.md,
+                color: AppColors.textTertiary,
+              ),
+            ],
           ],
         ),
       ),
+    );
+
+    if (toggled == null) return row;
+
+    // صفّ المفتاح يُقرأ كمفتاح واحد بحالته، لا كزرّ ثم مفتاح منفصلين.
+    return Semantics(
+      toggled: toggled,
+      label: title,
+      child: ExcludeSemantics(child: row),
     );
   }
 }
