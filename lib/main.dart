@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -42,10 +44,19 @@ Future<void> main() async {
 
   if (!kIsWeb) {
     try {
-      await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]);
+      // قفل الطول على أندرويد فقط.
+      //
+      // على iOS الاتجاه يُحسم في `Info.plist` لكل عائلة جهاز: الطول وحده
+      // على iPhone، والاتجاهات الأربعة على iPad. وهذا ليس تفضيلاً بل
+      // اضطرار — `setPreferredOrientations` يتجاهله iPadOS في أي تطبيق
+      // يدعم تعدّد المهام، فينتج تطبيق يقول إنه مقفول والنظام يدوّره
+      // على أي حال. مصدر واحد للحقيقة أفضل من قفلٍ لا يُطاع.
+      if (Platform.isAndroid) {
+        await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ]);
+      }
       SystemChrome.setSystemUIOverlayStyle(AppTheme.overlayStyle);
     } catch (error) {
       debugPrint('SystemChrome configuration skipped: $error');

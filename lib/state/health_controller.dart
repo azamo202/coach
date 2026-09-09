@@ -55,6 +55,18 @@ class HealthController extends ChangeNotifier {
       }
 
       final granted = await _service.requestAuthorization();
+
+      // `null` يعني أن خدمة الصحة غير موجودة على هذا الجهاز، لا أن
+      // المستخدم رفض. الفرق هو الفرق بين «جهازك لا يدعم هذا» و«ما وافقت
+      // على الصلاحيات» — والثانية تلوم المستخدم على رفضٍ لم يقع وتدعوه
+      // لإعادة محاولة لن تنجح.
+      if (granted == null) {
+        await _store.setBool(LocalStore.kHealthEnabled, value: false);
+        _snapshot = const HealthSnapshot(isAvailable: false);
+        await _persist();
+        return false;
+      }
+
       await _store.setBool(LocalStore.kHealthEnabled, value: granted);
       if (!granted) {
         _snapshot = _snapshot.copyWith(isAuthorized: false);

@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- كلاهما AppColors.spruce — يجب أن يطابق lib/core/theme/app_colors.dart -->
+
+    <!-- خلفية الأيقونة التكيّفية (mipmap-anydpi-v26/ic_launcher.xml) -->
     <color name="ic_launcher_background">#132420</color>
+
+    <!-- خلفية نافذة الإقلاع (drawable/launch_background.xml) -->
+    <color name="launchBackground">#132420</color>
 </resources>

@@ -95,9 +95,34 @@ class _GeneratingScreenState extends State<GeneratingScreen> {
         body: BrandBackdrop(
           colors: colors,
           child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: Space.xxl),
-              child: _error != null ? _buildError() : _buildLoading(colors),
+            // المحتوى متمركز ما دام يتّسع، ويصير قابلاً للتمرير حين لا
+            // يتّسع. الحالة الثانية ليست نادرة: خمس خطوات فوق شعار كبير
+            // وعنوان بطول اسم الرياضة تتجاوز ارتفاع iPhone SE، وتتجاوزه
+            // بفارق أكبر مع تكبير الخطّ. والمستخدم محبوس هنا دقيقة كاملة
+            // بلا زرّ خروج، فالفيضان هنا أطول عيب بصري يمكن أن يراه.
+            child: LayoutBuilder(
+              builder: (context, constraints) => SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Space.xxl,
+                  vertical: Space.xxl,
+                ),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: (constraints.maxHeight - Space.xxl * 2)
+                        .clamp(0.0, double.infinity),
+                  ),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: Space.formWidth,
+                      ),
+                      child: _error != null
+                          ? _buildError()
+                          : _buildLoading(colors),
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -107,6 +132,7 @@ class _GeneratingScreenState extends State<GeneratingScreen> {
 
   Widget _buildLoading(List<Color> colors) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         SportMark(
@@ -147,6 +173,7 @@ class _GeneratingScreenState extends State<GeneratingScreen> {
 
   Widget _buildError() {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         ErrorStateView(

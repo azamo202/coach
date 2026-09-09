@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
@@ -55,11 +55,14 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<!--
+		التطبيق يعمل بالطول فقط، و`SystemChrome.setPreferredOrientations`
+		في main.dart يثبّت ذلك. إعلان اتجاهات لا يدعمها التصميم يجعل
+		النظام يدوّر الواجهة على iPhone فتنكسر — فنعلن ما ننفّذه فقط.
+	-->
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
@@ -74,9 +77,9 @@
 		<string>en</string>
 	</array>
 	<key>NSHealthShareUsageDescription</key>
-	<string>ظ†ظ‚ط±ط£ ط®ط·ظˆط§طھظƒ ظˆط³ط¹ط±ط§طھظƒ ظˆظ†ط´ط§ط·ظƒ ط§ظ„ط±ظٹط§ط¶ظٹ ظ„ظ†ط¶ط¨ط· ط¨ط±ظ†ط§ظ…ط¬ظƒ ط§ظ„طھط¯ط±ظٹط¨ظٹ ط¹ظ„ظ‰ ظ…ط³طھظˆظ‰ ظ†ط´ط§ط·ظƒ ط§ظ„ظپط¹ظ„ظٹ.</string>
+	<string>نقرأ خطواتك وسعراتك ونشاطك الرياضي لنضبط برنامجك التدريبي على مستوى نشاطك الفعلي.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>ظ†ط³ط¬ظ‘ظ„ ط¬ظ„ط³ط§طھظƒ ط§ظ„طھط¯ط±ظٹط¨ظٹط© ط§ظ„ظ…ظƒطھظ…ظ„ط© ظپظٹ طھط·ط¨ظٹظ‚ ط§ظ„طµط­ط© ظ„طھط¨ظ‚ظ‰ ظƒظ„ ط¨ظٹط§ظ†ط§طھظƒ ظپظٹ ظ…ظƒط§ظ† ظˆط§ط­ط¯.</string>
+	<string>نسجّل جلساتك التدريبية المكتملة في تطبيق الصحة لتبقى كل بياناتك في مكان واحد.</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>https</string>

@@ -813,6 +813,11 @@ class _GenerateBar extends StatelessWidget {
                     onPressed: isBusy ? null : onGenerate,
                   ),
                   const SizedBox(height: Space.sm),
+                  // النصّ ينزل سطراً ثانياً بدل أن يفيض.
+                  //
+                  // بعرضه الطبيعي إلى جانب الأيقونة كان يتجاوز عرض نافذة
+                  // iPad الجانبية بمئة نقطة تقريباً. وهو نصّ توقُّع مهم
+                  // قبل انتظار دقيقة، فلا يجوز قصّه بحذف حروفه.
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
@@ -822,10 +827,12 @@ class _GenerateBar extends StatelessWidget {
                         color: AppColors.textTertiary,
                       ),
                       const SizedBox(width: Space.xs),
-                      Text(
-                        'التوليد يستغرق 20 إلى 60 ثانية',
-                        textAlign: TextAlign.center,
-                        style: AppType.caption,
+                      Flexible(
+                        child: Text(
+                          'التوليد يستغرق 20 إلى 60 ثانية',
+                          textAlign: TextAlign.center,
+                          style: AppType.caption,
+                        ),
                       ),
                     ],
                   ),

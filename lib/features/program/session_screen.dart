@@ -86,13 +86,20 @@ class SessionScreen extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: <Widget>[
-                              Row(
+                              // الوسمان ينزلان سطراً بدل أن يفيضا.
+                              //
+                              // «٦٥ دقيقة» و«٥ تمارين» بعرضهما الطبيعي
+                              // يتجاوزان عرض نافذة iPad الجانبية وشاشة
+                              // iPhone SE، خاصة مع تكبير الخطّ. والوسم
+                              // لا يُقصّ بحذف الحروف — فالحلّ سطر ثانٍ.
+                              Wrap(
+                                spacing: Space.sm,
+                                runSpacing: Space.sm,
                                 children: <Widget>[
                                   AppTag(
                                     label: Ar.minute(day.durationMinutes),
                                     icon: Icons.schedule_rounded,
                                   ),
-                                  const SizedBox(width: Space.sm),
                                   AppTag(
                                     label: Ar.exercise(day.exercises.length),
                                     icon: Icons.fitness_center_rounded,

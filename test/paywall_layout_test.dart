@@ -114,6 +114,29 @@ void main() {
       );
       expect(tester.takeException(), isNull);
     });
+
+    // التطبيق يُنشر لـiPhone وiPad، وعلى iPad يدور بحرية ويعمل في نوافذ
+    // تعدّد المهام. الوضع الأفقي هو الحرج هنا: شريط الدفع الثابت يحتلّ
+    // أسفل الشاشة، فما بقي للمحتوى أقصر مما يفترضه أي تصميم هاتف.
+    for (final (label, size) in <(String, Size)>[
+      ('iPad طولاً', const Size(834, 1112)),
+      ('iPad عرضاً', const Size(1366, 1024)),
+      ('iPad نافذة جانبية', const Size(320, 1024)),
+    ]) {
+      testWidgets('لا فيضان على $label', (tester) async {
+        await pumpPaywall(tester, size: size);
+        expect(tester.takeException(), isNull);
+      });
+    }
+
+    testWidgets('لا فيضان على iPad عرضاً مع تكبير الخط ×1.25', (tester) async {
+      await pumpPaywall(
+        tester,
+        size: const Size(1366, 1024),
+        textScale: 1.25,
+      );
+      expect(tester.takeException(), isNull);
+    });
   });
 
   group('متطلبات مراجعة App Store', () {

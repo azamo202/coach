@@ -107,4 +107,23 @@ void main() {
     await pumpScreen(tester, size: large, textScale: 1.3);
     expect(tester.takeException(), isNull);
   });
+
+  // iPad — يدور بحرية ويعمل في نوافذ تعدّد المهام. شاشة المستوى أطول
+  // نموذج في التطبيق (ثلاثة قياسات + شبكتا اختيار)، فهي أول ما يفيض
+  // عند ارتفاع أقصر أو عرض أضيق مما يفترضه تصميم الهاتف.
+  for (final (label, ipadSize) in <(String, Size)>[
+    ('iPad طولاً', const Size(834, 1112)),
+    ('iPad عرضاً', const Size(1366, 1024)),
+    ('iPad نافذة جانبية', const Size(320, 1024)),
+  ]) {
+    testWidgets('لا فيضان على $label', (tester) async {
+      await pumpScreen(tester, size: ipadSize);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('لا فيضان على iPad عرضاً مع تكبير الخط ×1.25', (tester) async {
+    await pumpScreen(tester, size: const Size(1366, 1024), textScale: 1.25);
+    expect(tester.takeException(), isNull);
+  });
 }

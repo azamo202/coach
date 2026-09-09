@@ -28,9 +28,12 @@ dependencies:
   shared_preferences: ^2.3.2
   flutter_secure_storage: ^9.2.2
 
-  # Health integrations (Apple HealthKit + Google Fit / Health Connect)
+  # Health integrations (Apple HealthKit + Health Connect)
+  # ملاحظة: لا تُضِف permission_handler — إضافته وحدها تُدخل في ثنائي iOS
+  # استدعاءات صلاحيات (كاميرا، صور، موقع، جهات اتصال) بلا نصوص غرض في
+  # Info.plist، فيرفض App Store الرفع بخطأ ITMS-90683. صلاحيات الصحة
+  # تُطلب عبر حزمة health نفسها.
   health: ^11.1.1
-  permission_handler: ^11.3.1
 
   # Utils
   intl: ^0.20.2

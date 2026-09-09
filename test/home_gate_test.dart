@@ -166,4 +166,29 @@ void main() {
       expect(find.text('كرة قدم'), findsOneWidget);
     });
   });
+
+  // ---------------------------------------------------------------
+  // iPad — يدور بحرية ويعمل في نوافذ تعدّد المهام
+  // ---------------------------------------------------------------
+  //
+  // الشاشة الأولى تجمع بطاقة صحة وشبكة اختصارات وقائمة برامج، وعرضها
+  // على iPad يبلغ ثلاثة أضعاف عرض الهاتف. الحالتان — مقفولة ومشتركة —
+  // تختلفان في العناصر المعروضة، فتُفحصان معاً.
+  group('iPad', () {
+    for (final (label, size) in <(String, Size)>[
+      ('طولاً', const Size(834, 1112)),
+      ('عرضاً', const Size(1366, 1024)),
+      ('نافذة جانبية', const Size(320, 1024)),
+    ]) {
+      testWidgets('لا فيضان $label — مقفول', (tester) async {
+        await pumpHome(tester, subscribed: false, size: size);
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('لا فيضان $label — مشترك', (tester) async {
+        await pumpHome(tester, subscribed: true, size: size);
+        expect(tester.takeException(), isNull);
+      });
+    }
+  });
 }

@@ -53,17 +53,25 @@ class HealthService {
   }
 
   /// طلب صلاحيات القراءة من المستخدم.
-  Future<bool> requestAuthorization() async {
+  ///
+  /// يُرجع `true` للموافقة، و`false` للرفض، و**`null` حين لا تكون خدمة
+  /// الصحة موجودة على الجهاز أصلاً**.
+  ///
+  /// التمييز الثالث ليس ترفاً: HealthKit غير متاح على iPad قبل iOS 17،
+  /// و[isAvailable] لا يكشف ذلك لأن حزمة `health` لا تعرض فحص توفّر
+  /// لـiOS. بلا هذا التمييز يرى مستخدم iPad رسالة «ما وافقت على
+  /// الصلاحيات» بعد أن لم يُسأل شيئاً — يلومه على رفضٍ لم يقع، ويدعوه
+  /// لإعادة محاولة لن تنجح أبداً.
+  Future<bool?> requestAuthorization() async {
     try {
       await _ensureConfigured();
-      final granted = await _health.requestAuthorization(
+      return await _health.requestAuthorization(
         _readTypes,
         permissions: _readPermissions,
       );
-      return granted;
     } catch (error) {
-      debugPrint('Health authorization failed: $error');
-      return false;
+      debugPrint('Health authorization unavailable: $error');
+      return null;
     }
   }
 

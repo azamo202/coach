@@ -9,6 +9,7 @@ import { handleAppleNotification } from '../lib/apple/notifications.js';
 import { AppStoreApiError, isStoreApiConfigured, storeApiDiagnostics }
   from '../lib/apple/store_api.js';
 import { allPlans } from '../lib/plans.js';
+import { isAiConfigured, isMockAiEnabled } from './ai.js';
 import { SubscriptionError, entitlementFor, syncFromApple } from '../lib/subscriptions.js';
 
 export const subscriptionsRouter = Router();
@@ -262,10 +263,23 @@ subscriptionsRouter.post('/apple/notifications', (req, res) => {
 // ---------------------------------------------------------------------
 
 /// يخبر المشغّل بما ينقص قبل النشر. لا يكشف أي قيمة سرّية.
+///
+/// يغطّي **كل** ما يلزم نسخةَ إنتاج تعمل، لا الاشتراكات وحدها: نداء واحد
+/// قبل الرفع إلى App Store يجيب عن «هل هذا الخادم جاهز؟». وجاهزية الذكاء
+/// الاصطناعي جزء من الجواب لأن غيابها يعطّل ما يدفع المستخدم مقابله
+/// تحديداً، ولا يظهر في أي مسار آخر إلا بعد شراء فعلي.
 subscriptionsRouter.get('/diagnostics', requireAuth, (_req, res) => {
+  const appleReady = isStoreApiConfigured() && isAppleRootAvailable();
+  const aiReady = isAiConfigured() || isMockAiEnabled();
+
   res.json({
     storeApi: storeApiDiagnostics(),
     appleRootCertificate: isAppleRootAvailable(),
-    ready: isStoreApiConfigured() && isAppleRootAvailable(),
+    ai: {
+      configured: isAiConfigured(),
+      mockMode: isMockAiEnabled(),
+      model: process.env.OPENAI_PROGRAM_MODEL || process.env.OPENAI_MODEL || null,
+    },
+    ready: appleReady && aiReady,
   });
 });

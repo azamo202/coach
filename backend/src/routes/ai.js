@@ -237,6 +237,49 @@ function claimSlot(userId, sport) {
 }
 
 // ---------------------------------------------------------------------
+// وضع المحاكاة — للتطوير وحده
+// ---------------------------------------------------------------------
+
+/**
+ * هل نعمل بمولّد القوالب بدل الذكاء الاصطناعي؟
+ *
+ * الشرط **صريح** عمداً: `MOCK_AI=true` فقط. كان الشرط سابقاً يشمل «غياب
+ * `OPENAI_API_KEY`»، وهذا أخطر إعداد ممكن في الإنتاج: مفتاح ناقص على
+ * الخادم يعني أن كل مشترك يدفع مقابل «برنامج يبنيه الذكاء الاصطناعي»
+ * فيستلم قالباً ثابتاً — ويحرق حصةً حقيقية من خطته. لا خطأ يظهر، ولا سجل
+ * يشتكي، والمراجع في App Store يرى استشارة مدرّب واحدة مكرّرة حرفياً على
+ * كل سؤال يسأله. عيب الإعداد يجب أن يظهر كعطل صريح، لا كخدمة مزيّفة.
+ */
+export function isMockAiEnabled() {
+  return process.env.MOCK_AI === 'true' && process.env.NODE_ENV !== 'production';
+}
+
+/** هل مفتاح الذكاء الاصطناعي حاضر فعلاً؟ */
+export function isAiConfigured() {
+  const key = (process.env.OPENAI_API_KEY || '').trim();
+  return Boolean(key) && !key.includes('xxxx');
+}
+
+/**
+ * يردّ بعطل صريح حين ينقص إعداد الذكاء الاصطناعي.
+ *
+ * 503 لا 500: هذا عطل مؤقّت في الخدمة يُصلحه المشغّل، والتطبيق يعرض
+ * للمستخدم زرّ «حاول مرة ثانية» بدل رسالة نهائية. ولا حصة تُستهلك —
+ * `claimSlot` لم يُستدعَ بعد.
+ */
+function aiUnavailable(res, userId, feature) {
+  console.error(
+    `[AI] مفتاح OPENAI_API_KEY غير مهيّأ — رفضنا طلب ${feature}. ` +
+      'لا تُشغّل الإنتاج بلا مفتاح.',
+  );
+  logAiUsage({ userId, feature, model: 'unconfigured', status: 'error', errorCode: 'ai_unavailable' });
+  return res.status(503).json({
+    code: 'ai_unavailable',
+    message: 'خدمة المدرّب الذكي غير متاحة الآن. حاول بعد قليل.',
+  });
+}
+
+// ---------------------------------------------------------------------
 // 1. مسار توليد البرنامج التدريبي (POST /ai/program)
 // ---------------------------------------------------------------------
 
@@ -254,12 +297,11 @@ aiRouter.post('/program', requireAuth, generateLimiter, requireProgramSlot, asyn
   const level = levelInfo(request.level);
   const userId = req.user.id;
 
-  const isMockMode =
-    !process.env.OPENAI_API_KEY ||
-    process.env.OPENAI_API_KEY.includes('xxxx') ||
-    process.env.MOCK_AI === 'true';
+  if (!isMockAiEnabled() && !isAiConfigured()) {
+    return aiUnavailable(res, userId, 'program_generation');
+  }
 
-  if (isMockMode) {
+  if (isMockAiEnabled()) {
     console.log(`[AI Mock] توليد برنامج تدريبي لرياضة: ${request.sport} (${level.label})`);
     const program = generateMockProgram(request);
     logAiUsage({
@@ -413,12 +455,11 @@ aiRouter.post('/coach-advice', requireAuth, adviceLimiter, requireCoachAccess, a
   const { question, exercise, userContext } = parsed.data;
   const userId = req.user.id;
 
-  const isMockMode =
-    !process.env.OPENAI_API_KEY ||
-    process.env.OPENAI_API_KEY.includes('xxxx') ||
-    process.env.MOCK_AI === 'true';
+  if (!isMockAiEnabled() && !isAiConfigured()) {
+    return aiUnavailable(res, userId, 'coach_advice');
+  }
 
-  if (isMockMode) {
+  if (isMockAiEnabled()) {
     return res.json({
       advice: {
         answer: 'احرص على أداء الحركة بمدى حركي مريح ولا تقفل المفاصل في نهاية الدفع.',

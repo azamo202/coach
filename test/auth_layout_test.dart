@@ -63,6 +63,22 @@ void main() {
   const small = Size(320, 568);
   const large = Size(412, 915);
 
+  // ---------------------------------------------------------------
+  // مقاسات iPad
+  // ---------------------------------------------------------------
+  //
+  // التطبيق يُنشر لـiPhone وiPad، وعلى iPad يدور بحرية ويعمل في نوافذ
+  // تعدّد المهام. هذه ثلاث حالات لا يبلغها أي مقاس هاتف:
+  //
+  // - `ipadPortrait`  — أعرض من كل تصميمات الهاتف.
+  // - `ipadLandscape` — عريض جداً وأقصر، وهو الوضع الذي يفيض فيه ما
+  //   بُني على ارتفاع هاتف.
+  // - `ipadSlideOver` — أضيق من أي هاتف مع ارتفاع لوحي، ويظهر حين
+  //   يسحب المستخدم التطبيق كنافذة جانبية.
+  const ipadPortrait = Size(834, 1112);
+  const ipadLandscape = Size(1366, 1024);
+  const ipadSlideOver = Size(320, 1024);
+
   testWidgets('الدخول: لا فيضان على شاشة صغيرة', (tester) async {
     await pumpScreen(tester, const LoginScreen(), size: small);
     expect(find.text('أهلاً بعودتك'), findsOneWidget);
@@ -119,6 +135,45 @@ void main() {
   testWidgets('استعادة كلمة المرور: لا فيضان', (tester) async {
     await pumpScreen(tester, const ForgotPasswordScreen(), size: small);
     expect(find.text('نسيت كلمة المرور؟'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  // ---------------------------------------------------------------
+  // iPad — الأوضاع الثلاثة لكل شاشة مصادقة
+  // ---------------------------------------------------------------
+
+  for (final (label, size) in <(String, Size)>[
+    ('iPad طولاً', ipadPortrait),
+    ('iPad عرضاً', ipadLandscape),
+    ('iPad نافذة جانبية', ipadSlideOver),
+  ]) {
+    testWidgets('الدخول: لا فيضان على $label', (tester) async {
+      await pumpScreen(tester, const LoginScreen(), size: size);
+      expect(find.text('أهلاً بعودتك'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('التسجيل: لا فيضان على $label', (tester) async {
+      await pumpScreen(tester, const SignUpScreen(), size: size);
+      expect(find.text('أنشئ حسابك'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('استعادة كلمة المرور: لا فيضان على $label', (tester) async {
+      await pumpScreen(tester, const ForgotPasswordScreen(), size: size);
+      expect(find.text('نسيت كلمة المرور؟'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('التسجيل: لا فيضان على iPad عرضاً مع تكبير الخط ×1.25',
+      (tester) async {
+    await pumpScreen(
+      tester,
+      const SignUpScreen(),
+      size: ipadLandscape,
+      textScale: 1.25,
+    );
     expect(tester.takeException(), isNull);
   });
 }

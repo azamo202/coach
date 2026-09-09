@@ -245,11 +245,21 @@ class _Body extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
+                            // العنوان مرن ووسم «الآن» يحتفظ بعرضه.
+                            //
+                            // العنوان مع الوسم يتجاوزان عرض البطاقة في
+                            // نافذة iPad الجانبية وعلى iPhone SE. الوسم
+                            // هو المعلومة التي لا تُقصّ — فالعنوان هو من
+                            // يتقلّص، لأنه مكرَّر أصلاً في تسمية Semantics.
                             Row(
                               children: <Widget>[
-                                Text(
-                                  'الأسبوع ${weekIndex + 1}',
-                                  style: AppType.h4,
+                                Flexible(
+                                  child: Text(
+                                    'الأسبوع ${weekIndex + 1}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppType.h4,
+                                  ),
                                 ),
                                 if (isCurrent) ...<Widget>[
                                   const SizedBox(width: Space.sm),

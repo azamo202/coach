@@ -88,6 +88,11 @@ class ProgramListTile extends StatelessWidget {
           const SizedBox(height: Space.md),
           ProgressBar(value: entry.ratio, colors: colors, height: 6),
           const SizedBox(height: Space.sm),
+          // النصّان مرنان لا ثابتان.
+          //
+          // «١٢ من ٤٠ جلسة» و«٨ أسابيع» يطولان بطول الأرقام وبمقياس الخطّ،
+          // وعرض البطاقة يضيق إلى ٢٤٦ نقطة في نافذة iPad الجانبية وعلى
+          // iPhone SE. بعرضهما الطبيعي داخل صفّ كانا يفيضان بلا حدّ.
           Row(
             children: <Widget>[
               const Icon(
@@ -96,7 +101,14 @@ class ProgramListTile extends StatelessWidget {
                 color: AppColors.textTertiary,
               ),
               const SizedBox(width: Space.xs),
-              Text(Ar.outOf(done, total, Ar.session), style: AppType.caption),
+              Flexible(
+                child: Text(
+                  Ar.outOf(done, total, Ar.session),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppType.caption,
+                ),
+              ),
               const Spacer(),
               const Icon(
                 Icons.schedule_rounded,
@@ -104,7 +116,14 @@ class ProgramListTile extends StatelessWidget {
                 color: AppColors.textTertiary,
               ),
               const SizedBox(width: Space.xs),
-              Text(Ar.week(program.totalWeeks), style: AppType.caption),
+              Flexible(
+                child: Text(
+                  Ar.week(program.totalWeeks),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppType.caption,
+                ),
+              ),
             ],
           ),
         ],

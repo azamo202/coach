@@ -98,4 +98,31 @@ void main() {
     expect(find.text('ابدأ الآن'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  // ---------------------------------------------------------------
+  // iPad — يدور بحرية ويعمل في نوافذ تعدّد المهام
+  // ---------------------------------------------------------------
+  //
+  // الوضع الأفقي هو الحالة الحرجة: عرض كبير مع ارتفاع أقصر مما يفترضه
+  // أي تصميم هاتف. والنافذة الجانبية عكسه — أضيق من أي هاتف.
+
+  for (final (label, size) in <(String, Size)>[
+    ('iPad طولاً', const Size(834, 1112)),
+    ('iPad عرضاً', const Size(1366, 1024)),
+    ('iPad نافذة جانبية', const Size(320, 1024)),
+  ]) {
+    testWidgets('لا فيضان على $label عبر كل الشرائح', (tester) async {
+      await pumpOnboarding(tester, size: size);
+      await walkAllSlides(tester);
+    });
+  }
+
+  testWidgets('لا فيضان على iPad عرضاً مع تكبير الخط ×1.25', (tester) async {
+    await pumpOnboarding(
+      tester,
+      size: const Size(1366, 1024),
+      textScale: 1.25,
+    );
+    await walkAllSlides(tester);
+  });
 }
