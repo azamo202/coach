@@ -55,17 +55,17 @@ class AppConfig {
 
   static const String productSingleMonthly = String.fromEnvironment(
     'IAP_SINGLE_MONTHLY',
-    defaultValue: 'com.coachmint.sub.single.monthly',
+    defaultValue: 'com.coachmint.single.monthly',
   );
 
   static const String productTrioMonthly = String.fromEnvironment(
     'IAP_TRIO_MONTHLY',
-    defaultValue: 'com.coachmint.sub.trio.monthly',
+    defaultValue: 'com.coachmint.trio.monthly',
   );
 
   static const String productUnlimitedYearly = String.fromEnvironment(
     'IAP_UNLIMITED_YEARLY',
-    defaultValue: 'com.coachmint.sub.unlimited.yearly',
+    defaultValue: 'com.coachmint.unlimited.yearly',
   );
 
   /// كل معرّفات المنتجات — تُطلب من StoreKit دفعة واحدة.

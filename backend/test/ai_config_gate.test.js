@@ -114,7 +114,7 @@ async function bootServer(env) {
     `tx_${Date.now()}`,
     userId,
     registered.user.appAccountToken,
-    'com.coachmint.sub.unlimited.yearly',
+    'com.coachmint.unlimited.yearly',
     'unlimited_yearly',
     APPLE_STATUS_ACTIVE,
     now,

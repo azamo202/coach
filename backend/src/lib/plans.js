@@ -43,7 +43,7 @@ export function paidPlans() {
   return [
     Object.freeze({
       id: 'single_monthly',
-      productId: productId('APPLE_PRODUCT_SINGLE_MONTHLY', 'com.coachmint.sub.single.monthly'),
+      productId: productId('APPLE_PRODUCT_SINGLE_MONTHLY', 'com.coachmint.single.monthly'),
       rank: 1,
       title: 'برنامج واحد',
       subtitle: 'برنامج تدريبي نشط واحد، بدّله وقت ما تبي',
@@ -55,7 +55,7 @@ export function paidPlans() {
     }),
     Object.freeze({
       id: 'trio_monthly',
-      productId: productId('APPLE_PRODUCT_TRIO_MONTHLY', 'com.coachmint.sub.trio.monthly'),
+      productId: productId('APPLE_PRODUCT_TRIO_MONTHLY', 'com.coachmint.trio.monthly'),
       rank: 2,
       title: 'ثلاثة برامج',
       subtitle: 'ثلاث رياضات بالتوازي في نفس الوقت',
@@ -67,7 +67,7 @@ export function paidPlans() {
     }),
     Object.freeze({
       id: 'unlimited_yearly',
-      productId: productId('APPLE_PRODUCT_UNLIMITED_YEARLY', 'com.coachmint.sub.unlimited.yearly'),
+      productId: productId('APPLE_PRODUCT_UNLIMITED_YEARLY', 'com.coachmint.unlimited.yearly'),
       rank: 3,
       title: 'برامج بلا حدود',
       subtitle: 'كل الرياضات، سنة كاملة',
