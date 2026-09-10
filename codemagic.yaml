@@ -1,0 +1,82 @@
+# بناء iOS ورفعه إلى TestFlight من السحابة.
+#
+# المشروع يُطوَّر على ويندوز، و`flutter build ipa` لا يعمل إلا على macOS
+# بأدوات Apple. هذا الملف يشغّل البناء على آلة macOS عند Codemagic.
+#
+# قبل أول تشغيل، انظر docs/PUBLISHING.md — يلزم مفتاح App Store Connect API
+# مُسجَّل في Codemagic باسم `CoachMint ASC`.
+
+workflows:
+  ios-testflight:
+    name: CoachMint iOS — TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+
+    integrations:
+      # اسم مفتاح App Store Connect API كما سجّلته في إعدادات Codemagic.
+      # وهو **غير** مفتاح In-App Purchase الذي يستخدمه الخادم للتحقق من
+      # المشتريات — مفتاحان مختلفان لغرضين مختلفين.
+      app_store_connect: CoachMint ASC
+
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.coachmint.coachmint
+
+      vars:
+        # Apple ID للتطبيق — من رابط صفحته في App Store Connect:
+        # appstoreconnect.apple.com/apps/<هذا الرقم>/…
+        APP_STORE_APPLE_ID: 6810186530
+
+    scripts:
+      - name: جلب الحزم
+        script: flutter pub get
+
+      # الفحص والاختبار قبل التوقيع لا بعده: كلاهما يستغرق ثوانٍ، والبناء
+      # والتوقيع يستغرقان دقائق. الفشل المبكر يوفّر دقائق البناء.
+      - name: تحليل ثابت
+        script: flutter analyze
+
+      - name: الاختبارات
+        script: flutter test
+
+      - name: ضبط ملفات التزويد على مشروع Xcode
+        script: xcode-project use-profiles
+
+      - name: تثبيت CocoaPods
+        script: find . -name "Podfile" -execdir pod install \;
+
+      # رقم البناء يُشتقّ من آخر نسخة على TestFlight + 1.
+      #
+      # App Store يرفض رفع رقم بناء مكرّر، و`pubspec.yaml` يحمل `+1`
+      # ثابتاً — فبلا هذا يفشل الرفع الثاني وكل ما بعده.
+      - name: بناء IPA
+        script: |
+          BUILD_NUMBER=$(($(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID") + 1))
+          flutter build ipa --release \
+            --build-name=1.0.0 \
+            --build-number=$BUILD_NUMBER \
+            --export-options-plist=/Users/builder/export_options.plist
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - flutter_drive.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        # يرفع إلى TestFlight فقط، ولا يرسل للمراجعة تلقائياً.
+        # الإرسال للمراجعة يبقى قراراً يدوياً بعد اختبار النسخة فعلياً.
+        submit_to_testflight: true
+
+      email:
+        recipients:
+          - coachmint1@gmail.com
+        notify:
+          success: true
+          failure: true
