@@ -10,7 +10,7 @@ class AppConfig {
 
   static const String appName = 'CoachMint';
   static const String appTagline = 'مدربك الرياضي بالذكاء الاصطناعي';
-  static const String supportEmail = 'support@coachmin.tech';
+  static const String supportEmail = 'coachmint1@gmail.com';
   static const String privacyPolicyUrl = 'https://coachmin.tech/privacy';
   static const String termsUrl = 'https://coachmin.tech/terms';
 

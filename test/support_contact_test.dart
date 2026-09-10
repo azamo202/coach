@@ -21,6 +21,8 @@ void main() {
       for (final page in <String>[
         'backend/public/privacy.html',
         'backend/public/terms.html',
+        // صفحة الهبوط هي Support URL المسجَّل في App Store.
+        'backend/public/index.html',
       ]) {
         expect(
           read(page),
