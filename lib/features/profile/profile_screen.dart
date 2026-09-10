@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/config/app_config.dart';
 import '../../core/theme/app_colors.dart';
@@ -23,6 +24,36 @@ import 'edit_profile_screen.dart';
 /// وأخيراً إجراءات الحساب — وحذف الحساب في آخر السطر لا في وسط القائمة.
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  /// يفتح بريد الدعم في تطبيق البريد.
+  ///
+  /// عند الفشل — ولا تطبيق بريد مُعدّاً على كثير من الأجهزة — نعرض
+  /// العنوان نصّاً بدل رسالة «ما قدرنا نفتح الرابط» وحدها: المستخدم
+  /// يحتاج العنوان نفسه، لا خبر فشل الفتح.
+  Future<void> _contactSupport(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final uri = Uri(
+      scheme: 'mailto',
+      path: AppConfig.supportEmail,
+      queryParameters: <String, String>{
+        'subject': '${AppConfig.appName} — طلب دعم',
+      },
+    );
+
+    try {
+      if (await launchUrl(uri, mode: LaunchMode.externalApplication)) return;
+    } catch (error) {
+      debugPrint('Failed to open support mail: $error');
+    }
+
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(
+          content: Text('راسلنا على ${AppConfig.supportEmail}'),
+        ),
+      );
+  }
 
   Future<void> _signOut(BuildContext context) async {
     final auth = context.read<AuthController>();
@@ -158,6 +189,18 @@ class ProfileScreen extends StatelessWidget {
                         _HealthSyncTile(enabled: user.healthSyncEnabled),
                         const SizedBox(height: Space.xxl),
                         const SectionHeader(title: 'الحساب'),
+                        // الدعم قبل تسجيل الخروج عمداً: من يبحث عن مساعدة
+                        // يجب أن يجدها قبل أن يصل إلى زرّ الخروج.
+                        //
+                        // وجوده ليس تحسيناً اختيارياً — سياسة الخصوصية
+                        // المنشورة تَعِد صراحةً بـ«حسابي ← الدعم والمساعدة»،
+                        // وApple تطلب وسيلة تواصل فعّالة (إرشاد 1.5).
+                        _Tile(
+                          icon: Icons.help_outline_rounded,
+                          title: 'الدعم والمساعدة',
+                          subtitle: AppConfig.supportEmail,
+                          onTap: () => _contactSupport(context),
+                        ),
                         _Tile(
                           icon: Icons.logout_rounded,
                           title: 'تسجيل الخروج',

@@ -43,3 +43,7 @@ AuthKey_*.p8
 # Misc
 .DS_Store
 _scaffold/
+
+# خطوط أداة لقطات المتجر — تُنزَّل محلياً ولا تدخل المستودع.
+# انظر tool/README.md لأمر تنزيلها.
+tool/.fonts/

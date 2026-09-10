@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
@@ -78,8 +78,6 @@
 	</array>
 	<key>NSHealthShareUsageDescription</key>
 	<string>نقرأ خطواتك وسعراتك ونشاطك الرياضي لنضبط برنامجك التدريبي على مستوى نشاطك الفعلي.</string>
-	<key>NSHealthUpdateUsageDescription</key>
-	<string>نسجّل جلساتك التدريبية المكتملة في تطبيق الصحة لتبقى كل بياناتك في مكان واحد.</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>https</string>
